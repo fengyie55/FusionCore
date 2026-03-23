@@ -19,6 +19,8 @@ Phase 1: 代码仓库和解决方案骨架初始化。
 1. `implementation-rules.md`
 2. `project-structure.md`
 3. `docs/architecture/` 目录下的所有文档
+4. `docs/standards/*.md` 目录下的Markdown作为主参考
+
 
 优先级顺序：
 - 架构文档
