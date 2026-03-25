@@ -1,118 +1,144 @@
 # FusionUI 模块约定
 
-## 目的
+## 当前阶段
 
-本文件描述 `FusionUI` 当前阶段的职责边界、最小 Shell 骨架和导航组织方式。
+`FusionUI` 当前处于从 `P2` 向“更稳定最小接线骨架”推进的阶段。
 
-当前阶段目标：
-- 提供最小 WPF Shell
-- 提供最小导航与视图区组织
-- 为后续 Host / Config / Log / Scheduler / FA 接线保留清晰入口
-
----
-
-## 当前新增能力
-
-`FusionUI` 第二阶段之前的基础阶段，当前已经具备：
-- 最小 Shell 窗口
-- 顶部状态区、左侧导航区、中央工作区、底部消息区
-- 概览、操作员、工程师、运行、日志、设备 六个占位页面
-- 最小导航模型与路由表达
-- 最小 UI 组合入口
+本轮新增的重点能力：
+- `UiSection -> UiShellOptions` 的最小映射边界
+- 运行态摘要只读模型
+- 日志入口摘要只读模型
+- 状态栏模型
+- `UiBootstrapContext` 与 `UiCompositionRoot` 的最小接线入口
 
 ---
 
-## 职责边界
+## 模块职责
 
 `FusionUI` 负责：
-- 表现层壳
-- 页面导航
-- 工作区承载
-- 最小页面占位
+- WPF Shell
+- 导航骨架
+- 视图区组织
+- 只读摘要展示模型
+- 最小 UI 接线入口
 
 `FusionUI` 不负责：
 - 业务真相
-- 调度算法
+- 调度逻辑
 - 设备控制
 - FA 协议逻辑
 - 配置系统实现
 - 日志系统实现
-- 进程管理或宿主实现
+- 完整宿主运行时
 
 ---
 
-## Shell 与导航
+## 当前默认接线方式
 
-当前默认骨架由以下部分组成：
-- `Shell/MainWindow`
-- `Shell/ShellViewModel`
-- `Navigation/NavigationItem`
-- `Navigation/NavigationSection`
-- `Navigation/NavigationViewModel`
-- `Composition/UiCompositionRoot`
+当前最小接线链路如下：
 
-当前导航只提供最小静态入口：
-- 概览
-- 操作员
-- 工程师
-- 运行
-- 日志
-- 设备
+1. `FusionConfig.UiSection`
+2. `FusionUI.Projections.UiOptionsBinder`
+3. `UiSectionMappingResult`
+4. `UiBootstrapContext`
+5. `UiCompositionRoot.CreateShell(...)`
 
-当前不实现：
-- 权限驱动菜单
-- 动态插件菜单
-- 复杂路由系统
-- 页面参数系统
+运行态与日志摘要也通过 `UiBootstrapContext` 显式传入：
+- `RuntimeSummaryModel`
+- `LogsViewProjection`
+
+这种方式解决的问题是：
+- UI 可以消费外部模块提供的只读摘要
+- UI 不必直接持有后台内部对象
+- Host / App 后续可以显式装配 UI，而不是依赖全局静态状态
 
 ---
 
-## 占位视图
+## 运行态摘要与日志摘要
 
-当前视图只作为未来页面入口占位：
-- `OverviewView`
-- `OperatorView`
-- `EngineerView`
-- `RuntimeView`
-- `LogsView`
-- `EquipmentView`
+### 运行态摘要
 
-这些页面当前只显示标题、说明和提示信息，不承载真实业务功能。
+当前运行态摘要模型包括：
+- `RuntimeSummaryModel`
+- `HostRuntimeSummaryModel`
+- `ModuleRuntimeSummaryModel`
+
+它们只表达最小只读信息：
+- Host 名称
+- Host 状态
+- 初始化状态
+- Runtime Instance Id
+- Profile
+- Runtime Root
+- 模块状态摘要
+
+### 日志摘要
+
+当前日志入口摘要模型包括：
+- `LogEntrySummaryModel`
+- `LogsViewProjection`
+
+它们只表达最小只读信息：
+- 时间
+- 级别
+- 分类
+- 消息摘要
+- 来源摘要
+
+当前不实现日志浏览、过滤、搜索、实时推送或日志平台。
 
 ---
 
-## 最小 UI 接线边界
+## 状态栏模型
 
-`UiCompositionRoot` 与 `UiRuntimeDescriptor` 用于表达：
-- UI 壳如何被构造
-- 当前导航分区有哪些
-- 当前布局语义是什么
+当前状态栏由以下模型承载：
+- `StatusBarModel`
+- `StatusBarItem`
+- `UiStatusMessage`
 
-它们当前解决的是“最小可接线”的问题，而不是完整 UI 启动框架。
+当前只表达最小摘要：
+- 当前页面
+- Host 状态
+- Profile
+- Runtime Root
+- 最小消息文本
 
-当前不解决：
-- Host 启动集成
-- Config 注入实现
-- Log 面板实现
-- Scheduler / FA 数据接入
-- 多进程消息桥接
+状态栏不是业务控制面板，也不是运行时控制台。
 
 ---
 
-## 多进程约束
+## 它解决什么问题
 
-FusionUI 必须保持多进程友好：
-- 不假设 UI 直接持有后台模块内部对象
-- 不把页面状态当作业务真相
-- 不把 DomainEvent 直接当成 UI 事件总线
-- 后续接入 Host / Config / Log / Scheduler / FA 时，应通过显式快照、查询或适配边界完成
+当前阶段解决的是：
+- 让 UI 成为更稳定的表现层接线点
+- 让配置、运行态和日志入口都能以只读摘要形式进入 UI
+- 为后续 Host / Config / Log / Scheduler / FA 接入预留清晰边界
+
+---
+
+## 它不解决什么问题
+
+当前阶段不解决：
+- 真实业务页面
+- 配置编辑器
+- 日志浏览系统
+- 运行诊断系统
+- 权限系统
+- 复杂 MVVM 基础设施
+- UI 插件系统
+- 多进程消息桥接实现
 
 ---
 
 ## 后续接入方向
 
-后续建议按以下方向继续：
-1. 接入最小 UI 配置边界
-2. 接入最小日志展示入口占位
-3. 接入最小运行状态摘要模型
-4. 再逐步接入 Scheduler / FA 的只读投影视图
+建议后续按以下顺序继续推进：
+1. `UiSection` 与更多 UI 外观/布局选项的最小收敛
+2. `FusionKernel` 运行摘要到 UI 状态区的默认接线
+3. `FusionLog` 只读日志入口到 `LogsView` 的默认接线
+4. `FusionScheduler` / `FusionFA` 的只读摘要视图接入
+
+在这些接入过程中，仍应保持：
+- UI 只消费只读投影
+- UI 不承载业务真相
+- UI 不假设所有后台模块与自己同进程

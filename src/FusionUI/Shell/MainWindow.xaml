@@ -14,7 +14,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="84" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="36" />
+            <RowDefinition Height="42" />
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0"
@@ -142,15 +142,43 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="2*" />
                 </Grid.ColumnDefinitions>
 
                 <TextBlock FontWeight="SemiBold"
                            Foreground="#365164"
                            Text="{Binding Layout.FooterAreaTitle}" />
-                <TextBlock Grid.Column="1"
+
+                <ItemsControl Grid.Column="1"
+                              Margin="12,0,0,0"
+                              ItemsSource="{Binding StatusBar.Items}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="0,0,8,0"
+                                    Padding="8,2"
+                                    Background="#F8FBFD"
+                                    CornerRadius="10">
+                                <TextBlock Foreground="#365164">
+                                    <Run FontWeight="SemiBold"
+                                         Text="{Binding Label}" />
+                                    <Run Text=": " />
+                                    <Run Text="{Binding Value}" />
+                                </TextBlock>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Grid.Column="2"
                            Margin="12,0,0,0"
+                           HorizontalAlignment="Right"
                            Foreground="#52606D"
-                           Text="{Binding FooterMessage}" />
+                           Text="{Binding StatusBar.Message.Text}" />
             </Grid>
         </Border>
     </Grid>
