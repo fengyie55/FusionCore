@@ -7,12 +7,11 @@ public sealed class InMemoryFusionModuleRegistry : IFusionModuleRegistry
 {
     private readonly Dictionary<string, IFusionModule> _modulesById = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _moduleIdsByName = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ModuleState> _statesById = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// 注册模块实例。
     /// </summary>
-    /// <param name="module">待注册模块。</param>
-    /// <returns>注册结果。</returns>
     public ModuleRegistrationResult Register(IFusionModule module)
     {
         ArgumentNullException.ThrowIfNull(module);
@@ -36,6 +35,7 @@ public sealed class InMemoryFusionModuleRegistry : IFusionModuleRegistry
         }
 
         _modulesById[moduleId] = module;
+        _statesById[moduleId] = ModuleState.Registered;
 
         if (!string.IsNullOrWhiteSpace(moduleName))
         {
@@ -48,20 +48,22 @@ public sealed class InMemoryFusionModuleRegistry : IFusionModuleRegistry
     /// <summary>
     /// 获取已注册模块描述集合。
     /// </summary>
-    /// <returns>模块描述集合。</returns>
     public IReadOnlyCollection<IFusionModuleDescriptor> GetRegisteredModules()
     {
-        return _modulesById.Values
-            .Select(module => module.Descriptor)
-            .ToArray();
+        return _modulesById.Values.Select(module => module.Descriptor).ToArray();
+    }
+
+    /// <summary>
+    /// 获取已注册模块实例集合。
+    /// </summary>
+    public IReadOnlyCollection<IFusionModule> GetModules()
+    {
+        return _modulesById.Values.ToArray();
     }
 
     /// <summary>
     /// 按模块标识尝试获取模块。
     /// </summary>
-    /// <param name="moduleId">模块标识。</param>
-    /// <param name="module">模块实例。</param>
-    /// <returns>是否找到模块。</returns>
     public bool TryGetModule(string moduleId, out IFusionModule? module)
     {
         var found = _modulesById.TryGetValue(moduleId, out var registeredModule);
@@ -72,9 +74,6 @@ public sealed class InMemoryFusionModuleRegistry : IFusionModuleRegistry
     /// <summary>
     /// 按模块名称尝试获取模块。
     /// </summary>
-    /// <param name="moduleName">模块名称。</param>
-    /// <param name="module">模块实例。</param>
-    /// <returns>是否找到模块。</returns>
     public bool TryGetModuleByName(string moduleName, out IFusionModule? module)
     {
         module = null;
@@ -85,5 +84,39 @@ public sealed class InMemoryFusionModuleRegistry : IFusionModuleRegistry
         }
 
         return TryGetModule(moduleId, out module);
+    }
+
+    /// <summary>
+    /// 获取模块当前状态。
+    /// </summary>
+    public ModuleState GetModuleState(string moduleId)
+    {
+        return _statesById.TryGetValue(moduleId, out var state)
+            ? state
+            : ModuleState.Registered;
+    }
+
+    /// <summary>
+    /// 更新模块状态。
+    /// </summary>
+    public bool TryUpdateState(string moduleId, ModuleState state)
+    {
+        if (!_modulesById.ContainsKey(moduleId))
+        {
+            return false;
+        }
+
+        _statesById[moduleId] = state;
+        return true;
+    }
+
+    /// <summary>
+    /// 创建模块集合快照。
+    /// </summary>
+    public ModuleCollectionSnapshot CreateSnapshot()
+    {
+        return new ModuleCollectionSnapshot(
+            GetRegisteredModules(),
+            new Dictionary<string, ModuleState>(_statesById, StringComparer.OrdinalIgnoreCase));
     }
 }
