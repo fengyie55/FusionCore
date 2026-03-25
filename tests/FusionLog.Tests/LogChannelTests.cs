@@ -10,5 +10,6 @@ public sealed class LogChannelTests
         var channel = new LogChannel("system");
 
         Assert.Equal("system", channel.Name);
+        Assert.Equal("system", channel.ToCategory().Name);
     }
 }
