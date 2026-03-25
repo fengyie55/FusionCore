@@ -1,13 +1,10 @@
-﻿using System.Configuration;
-using System.Data;
 using System.Windows;
 
 namespace FusionUI;
 
 /// <summary>
-/// App.xaml 的交互逻辑。
+/// 表示 FusionUI 的 WPF 应用程序入口。
 /// </summary>
 public partial class App : Application
 {
 }
-
