@@ -1,5 +1,7 @@
 using FusionUI.Layout;
+using FusionUI.Models;
 using FusionUI.Navigation;
+using FusionUI.Projections;
 using FusionUI.Shell;
 
 namespace FusionUI.Composition;
@@ -12,39 +14,44 @@ public static class UiCompositionRoot
     /// <summary>
     /// 创建最小 Shell 视图模型。
     /// </summary>
-    public static ShellViewModel CreateShell(
-        UiShellOptions? shellOptions = null,
-        UiNavigationOptions? navigationOptions = null)
+    public static ShellViewModel CreateShell(UiBootstrapContext? bootstrapContext = null)
     {
-        var resolvedShellOptions = shellOptions ?? CreateDefaultShellOptions();
-        var resolvedNavigationOptions = navigationOptions ?? new UiNavigationOptions();
+        var mappingResult = bootstrapContext?.MappingResult ?? UiOptionsBinder.Bind(null);
+        var runtimeSummary = bootstrapContext?.RuntimeSummary ?? RuntimeSummaryModel.Empty;
+        var logsProjection = bootstrapContext?.LogsProjection ?? LogsViewProjection.Empty;
         var layout = CreateLayoutDescriptor();
-        var navigation = CreateNavigationViewModel(resolvedNavigationOptions);
-        var shell = new ShellViewModel(resolvedShellOptions, layout, navigation);
+        var navigation = CreateNavigationViewModel(mappingResult.NavigationOptions);
+
+        var shell = new ShellViewModel(
+            mappingResult.ShellOptions,
+            mappingResult.StatusBarOptions,
+            layout,
+            navigation,
+            runtimeSummary,
+            logsProjection);
+
         var firstItem = navigation.Sections.SelectMany(section => section.Items).First();
         shell.NavigateTo(firstItem);
         return shell;
     }
 
     /// <summary>
-    /// 创建 UI 运行时描述信息。
+    /// 创建 UI 运行态描述信息。
     /// </summary>
-    public static UiRuntimeDescriptor CreateRuntimeDescriptor(UiNavigationOptions? navigationOptions = null)
+    public static UiRuntimeDescriptor CreateRuntimeDescriptor(UiBootstrapContext? bootstrapContext = null)
     {
+        var mappingResult = bootstrapContext?.MappingResult ?? UiOptionsBinder.Bind(null);
+        var runtimeSummary = bootstrapContext?.RuntimeSummary ?? RuntimeSummaryModel.Empty;
         var layout = CreateLayoutDescriptor();
-        var navigation = CreateNavigationViewModel(navigationOptions ?? new UiNavigationOptions());
-        return new UiRuntimeDescriptor(
-            CreateDefaultShellOptions().ApplicationTitle,
-            layout,
-            navigation.Sections.Select(section => section.Title).ToList());
-    }
+        var navigation = CreateNavigationViewModel(mappingResult.NavigationOptions);
+        var dependencies = bootstrapContext?.Dependencies ?? CreateDefaultDependencies();
 
-    private static UiShellOptions CreateDefaultShellOptions()
-    {
-        return new UiShellOptions(
-            "FusionCore",
-            "E95 对齐的最小操作界面壳层",
-            "当前阶段仅提供壳层、导航和占位视图。");
+        return new UiRuntimeDescriptor(
+            mappingResult.ShellOptions.ApplicationTitle,
+            layout,
+            navigation.Sections.Select(section => section.Title).ToList(),
+            runtimeSummary,
+            dependencies);
     }
 
     private static ShellLayoutDescriptor CreateLayoutDescriptor()
@@ -53,7 +60,7 @@ public static class UiCompositionRoot
             "顶部状态区",
             "导航区",
             "工作区",
-            "状态消息区");
+            "状态摘要区");
     }
 
     private static NavigationViewModel CreateNavigationViewModel(UiNavigationOptions options)
@@ -69,12 +76,12 @@ public static class UiCompositionRoot
 
         if (options.IncludeRuntimeEntry)
         {
-            platformItems.Add(new NavigationItem(UiRoute.Runtime, "运行", "宿主与运行状态入口。", "平台"));
+            platformItems.Add(new NavigationItem(UiRoute.Runtime, "运行", "宿主与运行状态只读入口。", "平台"));
         }
 
         if (options.IncludeLogsEntry)
         {
-            platformItems.Add(new NavigationItem(UiRoute.Logs, "日志", "日志显示入口占位。", "平台"));
+            platformItems.Add(new NavigationItem(UiRoute.Logs, "日志", "日志摘要展示入口占位。", "平台"));
         }
 
         if (options.IncludeEquipmentEntry)
@@ -93,5 +100,15 @@ public static class UiCompositionRoot
         }
 
         return new NavigationViewModel(sections);
+    }
+
+    private static IReadOnlyCollection<UiDependencyDescriptor> CreateDefaultDependencies()
+    {
+        return
+        [
+            new UiDependencyDescriptor("Config", false, "当前尚未注入 UI 配置快照。"),
+            new UiDependencyDescriptor("Runtime", false, "当前尚未注入宿主运行态摘要。"),
+            new UiDependencyDescriptor("Logs", false, "当前尚未注入日志摘要入口。")
+        ];
     }
 }

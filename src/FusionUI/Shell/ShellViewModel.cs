@@ -1,6 +1,8 @@
 using FusionUI.Composition;
 using FusionUI.Layout;
+using FusionUI.Models;
 using FusionUI.Navigation;
+using FusionUI.Projections;
 using FusionUI.ViewModels;
 
 namespace FusionUI.Shell;
@@ -12,7 +14,8 @@ public sealed class ShellViewModel : ObservableObject
 {
     private object? _currentViewModel;
     private string _currentViewTitle = string.Empty;
-    private string _footerMessage = string.Empty;
+    private StatusBarModel _statusBar = StatusBarModel.Empty;
+    private readonly UiStatusBarOptions _statusBarOptions;
 
     /// <summary>
     /// 应用标题。
@@ -35,6 +38,16 @@ public sealed class ShellViewModel : ObservableObject
     public NavigationViewModel Navigation { get; }
 
     /// <summary>
+    /// 当前运行态摘要。
+    /// </summary>
+    public RuntimeSummaryModel RuntimeSummary { get; }
+
+    /// <summary>
+    /// 当前日志入口摘要。
+    /// </summary>
+    public LogsViewProjection LogsProjection { get; }
+
+    /// <summary>
     /// 当前工作区视图模型。
     /// </summary>
     public object? CurrentViewModel
@@ -53,12 +66,12 @@ public sealed class ShellViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 底部消息。
+    /// 当前状态栏模型。
     /// </summary>
-    public string FooterMessage
+    public StatusBarModel StatusBar
     {
-        get => _footerMessage;
-        private set => SetProperty(ref _footerMessage, value);
+        get => _statusBar;
+        private set => SetProperty(ref _statusBar, value);
     }
 
     /// <summary>
@@ -66,15 +79,21 @@ public sealed class ShellViewModel : ObservableObject
     /// </summary>
     public ShellViewModel(
         UiShellOptions shellOptions,
+        UiStatusBarOptions statusBarOptions,
         ShellLayoutDescriptor layout,
-        NavigationViewModel navigation)
+        NavigationViewModel navigation,
+        RuntimeSummaryModel runtimeSummary,
+        LogsViewProjection logsProjection)
     {
         ApplicationTitle = shellOptions.ApplicationTitle;
         ShellSubtitle = shellOptions.ShellSubtitle;
-        FooterMessage = shellOptions.FooterMessage;
         Layout = layout;
         Navigation = navigation;
+        RuntimeSummary = runtimeSummary;
+        LogsProjection = logsProjection;
+        _statusBarOptions = statusBarOptions;
         _currentViewTitle = shellOptions.ApplicationTitle;
+        _statusBar = CreateStatusBar(shellOptions.ApplicationTitle, shellOptions.StartupMessage);
     }
 
     /// <summary>
@@ -85,20 +104,47 @@ public sealed class ShellViewModel : ObservableObject
         Navigation.Select(item);
         CurrentViewModel = CreateViewModel(item.Route);
         CurrentViewTitle = item.Title;
-        FooterMessage = item.Description;
+        StatusBar = CreateStatusBar(item.Title, item.Description);
     }
 
-    private static object CreateViewModel(UiRoute route)
+    private object CreateViewModel(UiRoute route)
     {
         return route switch
         {
             UiRoute.Overview => new OverviewViewModel(),
             UiRoute.Operator => new OperatorViewModel(),
             UiRoute.Engineer => new EngineerViewModel(),
-            UiRoute.Runtime => new RuntimeViewModel(),
-            UiRoute.Logs => new LogsViewModel(),
+            UiRoute.Runtime => new RuntimeViewModel(RuntimeSummary),
+            UiRoute.Logs => new LogsViewModel(LogsProjection),
             UiRoute.Equipment => new EquipmentViewModel(),
             _ => new OverviewViewModel()
         };
+    }
+
+    private StatusBarModel CreateStatusBar(string currentPage, string messageText)
+    {
+        var items = new List<StatusBarItem>();
+
+        if (_statusBarOptions.ShowCurrentPage)
+        {
+            items.Add(new StatusBarItem("页面", currentPage));
+        }
+
+        if (_statusBarOptions.ShowHostState)
+        {
+            items.Add(new StatusBarItem("宿主", RuntimeSummary.Host.HostState));
+        }
+
+        if (_statusBarOptions.ShowProfile)
+        {
+            items.Add(new StatusBarItem("Profile", RuntimeSummary.Host.Profile ?? "n/a"));
+        }
+
+        if (_statusBarOptions.ShowRuntimeRoot)
+        {
+            items.Add(new StatusBarItem("运行根", RuntimeSummary.Host.RuntimeRoot));
+        }
+
+        return new StatusBarModel(items, new UiStatusMessage(messageText));
     }
 }
