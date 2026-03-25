@@ -1,4 +1,5 @@
 using FusionKernel.Modules;
+using FusionKernel.Results;
 using FusionKernel.Services;
 
 namespace FusionKernel;
@@ -6,7 +7,7 @@ namespace FusionKernel;
 /// <summary>
 /// 提供 FusionKernel 的最小占位模块实现。
 /// </summary>
-public sealed class PlatformModule : IFusionModule
+public sealed class PlatformModule : IFusionModule, IModuleLifecycle
 {
     /// <summary>
     /// 获取模块标识。
@@ -21,7 +22,10 @@ public sealed class PlatformModule : IFusionModule
     /// <summary>
     /// 获取模块描述。
     /// </summary>
-    public IFusionModuleDescriptor Descriptor { get; } = new PlatformModuleDescriptor();
+    public IFusionModuleDescriptor Descriptor { get; } = new ModuleDescriptor(
+        "FusionKernel.PlatformModule",
+        "FusionKernel Platform Module",
+        "1.0.0");
 
     /// <summary>
     /// 执行最小初始化。
@@ -33,17 +37,33 @@ public sealed class PlatformModule : IFusionModule
     /// <summary>
     /// 配置模块服务。
     /// </summary>
-    /// <param name="registrar">服务注册器。</param>
     public void ConfigureServices(IServiceRegistrar registrar)
     {
     }
 
-    private sealed class PlatformModuleDescriptor : IFusionModuleDescriptor
+    /// <summary>
+    /// 执行模块初始化阶段。
+    /// </summary>
+    public ModuleInitializationResult InitializeModule(ModuleInitializationContext context)
     {
-        public string ModuleId => "FusionKernel.PlatformModule";
+        Initialize();
+        ConfigureServices(context.ServiceRegistrar);
+        return new ModuleInitializationResult(true, Descriptor.ModuleId, "MODULE_INITIALIZED", null);
+    }
 
-        public string ModuleName => "FusionKernel Platform Module";
+    /// <summary>
+    /// 执行模块启动阶段。
+    /// </summary>
+    public ModuleStartResult StartModule(ModuleStartContext context)
+    {
+        return new ModuleStartResult(true, Descriptor.ModuleId, "MODULE_STARTED", null);
+    }
 
-        public string Version => "1.0.0";
+    /// <summary>
+    /// 执行模块停止阶段。
+    /// </summary>
+    public ModuleStopResult StopModule(ModuleStopContext context)
+    {
+        return new ModuleStopResult(true, Descriptor.ModuleId, "MODULE_STOPPED", null);
     }
 }

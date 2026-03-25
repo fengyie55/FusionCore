@@ -1,4 +1,4 @@
-using FusionKernel.Context;
+using FusionKernel.Runtime;
 using FusionKernel.Modules;
 using FusionKernel.Services;
 
@@ -18,8 +18,6 @@ public sealed class FusionHostBuilder : IFusionHostBuilder
     /// <summary>
     /// 配置运行上下文。
     /// </summary>
-    /// <param name="runtimeContext">运行上下文。</param>
-    /// <returns>当前构建器。</returns>
     public IFusionHostBuilder UseRuntimeContext(RuntimeContext runtimeContext)
     {
         _runtimeContext = runtimeContext ?? throw new ArgumentNullException(nameof(runtimeContext));
@@ -29,8 +27,6 @@ public sealed class FusionHostBuilder : IFusionHostBuilder
     /// <summary>
     /// 配置宿主上下文。
     /// </summary>
-    /// <param name="hostContext">宿主上下文。</param>
-    /// <returns>当前构建器。</returns>
     public IFusionHostBuilder UseHostContext(IFusionHostContext hostContext)
     {
         _hostContext = hostContext ?? throw new ArgumentNullException(nameof(hostContext));
@@ -40,8 +36,6 @@ public sealed class FusionHostBuilder : IFusionHostBuilder
     /// <summary>
     /// 配置模块注册表。
     /// </summary>
-    /// <param name="moduleRegistry">模块注册表。</param>
-    /// <returns>当前构建器。</returns>
     public FusionHostBuilder UseModuleRegistry(IFusionModuleRegistry moduleRegistry)
     {
         _moduleRegistry = moduleRegistry ?? throw new ArgumentNullException(nameof(moduleRegistry));
@@ -51,8 +45,6 @@ public sealed class FusionHostBuilder : IFusionHostBuilder
     /// <summary>
     /// 配置服务注册器。
     /// </summary>
-    /// <param name="serviceRegistrar">服务注册器。</param>
-    /// <returns>当前构建器。</returns>
     public FusionHostBuilder UseServiceRegistrar(IServiceRegistrar serviceRegistrar)
     {
         _serviceRegistrar = serviceRegistrar ?? throw new ArgumentNullException(nameof(serviceRegistrar));
@@ -62,8 +54,6 @@ public sealed class FusionHostBuilder : IFusionHostBuilder
     /// <summary>
     /// 配置服务解析器。
     /// </summary>
-    /// <param name="serviceResolver">服务解析器。</param>
-    /// <returns>当前构建器。</returns>
     public FusionHostBuilder UseServiceResolver(IServiceResolver serviceResolver)
     {
         _serviceResolver = serviceResolver ?? throw new ArgumentNullException(nameof(serviceResolver));
@@ -71,9 +61,8 @@ public sealed class FusionHostBuilder : IFusionHostBuilder
     }
 
     /// <summary>
-    /// 构建默认宿主实例。
+    /// 构建最小宿主实例。
     /// </summary>
-    /// <returns>宿主实例。</returns>
     public IFusionHost Build()
     {
         var runtimeContext = _runtimeContext ?? CreateDefaultRuntimeContext();
@@ -85,18 +74,27 @@ public sealed class FusionHostBuilder : IFusionHostBuilder
             runtimeContext.RuntimeRoot,
             runtimeContext);
 
+        var descriptor = new HostDescriptor(
+            hostContext.HostId,
+            hostContext.HostName,
+            runtimeContext.InstanceId.Value,
+            runtimeContext.RuntimeRoot,
+            hostContext.RunMode,
+            runtimeContext.Profile);
+
         return new FusionHost(
             hostContext,
+            descriptor,
             runtimeContext,
             _moduleRegistry ?? new InMemoryFusionModuleRegistry(),
             _serviceRegistrar ?? serviceRegistry,
             _serviceResolver ?? serviceRegistry);
     }
 
-    private RuntimeContext CreateDefaultRuntimeContext()
+    private static RuntimeContext CreateDefaultRuntimeContext()
     {
         return new RuntimeContext(
-            "FusionRuntime",
+            new RuntimeInstanceId("FusionRuntime"),
             AppContext.BaseDirectory,
             HostRunMode.Production,
             "Production");
