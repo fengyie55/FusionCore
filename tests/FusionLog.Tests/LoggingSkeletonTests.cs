@@ -128,15 +128,39 @@ public sealed class LoggingSkeletonTests
     [Fact]
     public void Logging_Options_Binder_Can_Map_Logging_Section()
     {
+        var runtimeRoot = RuntimeRootOptions.CreateDefault(@"R:\", @"D:\FusionRuntime");
         var section = new LoggingSection(true, @"D:\FusionRuntime\logs");
         var binder = new LoggingOptionsBinder();
 
-        var options = binder.Bind(section);
+        var options = binder.Bind(section, runtimeRoot);
 
         Assert.True(options.Enabled);
         Assert.True(options.File.Enabled);
         Assert.Equal(@"D:\FusionRuntime\logs", options.File.WriteOptions.RootPath);
         Assert.False(options.Memory.Enabled);
+    }
+
+    [Fact]
+    public void Logging_Options_Binder_Falls_Back_To_RuntimeRoot_LogsPath_When_Section_Path_Is_Blank()
+    {
+        var runtimeRoot = RuntimeRootOptions.CreateDefault(@"R:\", @"D:\FusionRuntime");
+        var profile = new EnvironmentProfile("prod", ConfigurationProfileKind.Production, "Production");
+        var snapshot = new ConfigurationSnapshot(
+            profile,
+            runtimeRoot,
+            new IConfigurationSection[]
+            {
+                new AppSettingsSection(runtimeRoot, profile),
+                new LoggingSection(true, string.Empty),
+            });
+        var provider = new DefaultConfigurationProvider(snapshot);
+        var binder = new LoggingOptionsBinder();
+
+        var options = binder.Bind(provider);
+
+        Assert.True(options.Enabled);
+        Assert.Equal(runtimeRoot.PathSet.LogsPath, options.File.WriteOptions.RootPath);
+        Assert.Equal("fusion.log", options.File.WriteOptions.FileName);
     }
 
     [Fact]
@@ -159,6 +183,67 @@ public sealed class LoggingSkeletonTests
 
         Assert.True(options.Enabled);
         Assert.Equal(runtimeRoot.LogsPath, options.File.WriteOptions.RootPath);
+    }
+
+    [Fact]
+    public void Logging_Options_Binder_Uses_Runtime_Logs_Path_When_Section_Path_Is_Empty()
+    {
+        var runtimeRoot = RuntimeRootOptions.CreateDefault(@"R:\", @"D:\FusionRuntime");
+        var binder = new LoggingOptionsBinder();
+
+        var options = binder.Bind(new LoggingSection(true, string.Empty), runtimeRoot);
+
+        Assert.Equal(runtimeRoot.LogsPath, options.File.WriteOptions.RootPath);
+    }
+
+    [Fact]
+    public void Logging_Options_Binder_Resolves_Relative_Path_Under_Runtime_Logs_Root()
+    {
+        var runtimeRoot = RuntimeRootOptions.CreateDefault(@"R:\", @"D:\FusionRuntime");
+        var binder = new LoggingOptionsBinder();
+
+        var options = binder.Bind(new LoggingSection(true, "scheduler"), runtimeRoot);
+
+        Assert.Equal(Path.Combine(runtimeRoot.LogsPath, "scheduler"), options.File.WriteOptions.RootPath);
+    }
+
+    [Fact]
+    public void Default_Writer_Factory_Can_Write_To_RuntimeRoot_LogsPath_From_Binder()
+    {
+        var tempRoot = CreateTempDirectory();
+        try
+        {
+            var runtimeRoot = RuntimeRootOptions.CreateDefault(@"R:\", tempRoot);
+            var profile = new EnvironmentProfile("prod", ConfigurationProfileKind.Production, "Production");
+            var snapshot = new ConfigurationSnapshot(
+                profile,
+                runtimeRoot,
+                new IConfigurationSection[]
+                {
+                    new AppSettingsSection(runtimeRoot, profile),
+                    new LoggingSection(true, string.Empty),
+                });
+            var provider = new DefaultConfigurationProvider(snapshot);
+            var binder = new LoggingOptionsBinder();
+            var factory = new DefaultLoggerWriterFactory();
+            var context = CreateContext();
+
+            var options = binder.Bind(provider);
+            var descriptor = factory.Describe(options, context);
+            var writer = factory.Create(options, context);
+            var result = writer.Write(CreateEntry("默认日志路径装配成功"));
+
+            Assert.True(result.Succeeded);
+            Assert.True(descriptor.UsesFileWriter);
+            Assert.StartsWith(runtimeRoot.PathSet.LogsPath, descriptor.FilePath!.DirectoryPath);
+            Assert.Contains("HOST-01", descriptor.FilePath.DirectoryPath);
+            Assert.Contains("PROC-01", descriptor.FilePath.DirectoryPath);
+            Assert.Contains("默认日志路径装配成功", File.ReadAllText(descriptor.FilePath.FilePath));
+        }
+        finally
+        {
+            CleanupTempDirectory(tempRoot);
+        }
     }
 
     [Fact]
