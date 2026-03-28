@@ -9,6 +9,7 @@ namespace FusionApp.Composition;
 /// 表示 FusionApp 启动时的最小接线上下文。
 /// </summary>
 public sealed record ApplicationBootstrapContext(
+    ApplicationBoundary Boundary,
     HostBootstrapContext HostBootstrapContext,
     ApplicationOptions Options,
     ApplicationPresentationOptions PresentationOptions,

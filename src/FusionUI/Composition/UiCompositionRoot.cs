@@ -3,6 +3,7 @@ using FusionUI.Models;
 using FusionUI.Navigation;
 using FusionUI.Projections;
 using FusionUI.Shell;
+using FusionApp.Composition;
 
 namespace FusionUI.Composition;
 
@@ -11,6 +12,15 @@ namespace FusionUI.Composition;
 /// </summary>
 public static class UiCompositionRoot
 {
+    /// <summary>
+    /// 从应用装配结果创建最小 Shell 视图模型。
+    /// </summary>
+    public static ShellViewModel CreateShell(ApplicationAssembly assembly)
+    {
+        ArgumentNullException.ThrowIfNull(assembly);
+        return CreateShell(UiApplicationProjection.CreateBootstrapContext(assembly));
+    }
+
     /// <summary>
     /// 创建最小 Shell 视图模型。
     /// </summary>
@@ -52,6 +62,15 @@ public static class UiCompositionRoot
             navigation.Sections.Select(section => section.Title).ToList(),
             runtimeSummary,
             dependencies);
+    }
+
+    /// <summary>
+    /// 从应用装配结果创建 UI 运行描述。
+    /// </summary>
+    public static UiRuntimeDescriptor CreateRuntimeDescriptor(ApplicationAssembly assembly)
+    {
+        ArgumentNullException.ThrowIfNull(assembly);
+        return CreateRuntimeDescriptor(UiApplicationProjection.CreateBootstrapContext(assembly));
     }
 
     private static ShellLayoutDescriptor CreateLayoutDescriptor()

@@ -1,10 +1,10 @@
+using FusionApp.Runtime;
 using FusionConfig.Abstractions;
 using FusionConfig.Runtime;
 using FusionKernel.Composition;
 using FusionKernel.Hosting;
 using FusionKernel.Modules;
 using FusionLog.Abstractions;
-using FusionApp.Runtime;
 
 namespace FusionApp.Composition;
 
@@ -72,10 +72,29 @@ public static class ApplicationCompositionRoot
         ApplicationPresentationOptions? presentationOptions = null,
         IReadOnlyCollection<IFusionModule>? modules = null)
     {
-        var resolvedOptions = options ?? CreateDefaultOptions();
         var resolvedBoundary = boundary ?? CreateBoundary();
+        var resolvedRuntimeRoot = ResolveRuntimeRoot(resolvedBoundary, options);
+        var resolvedProfile = ResolveProfile(resolvedBoundary, options);
+        var resolvedOptions = options ?? CreateDefaultOptions(resolvedRuntimeRoot);
+
+        if (!string.IsNullOrWhiteSpace(resolvedProfile))
+        {
+            resolvedOptions = resolvedOptions with
+            {
+                Profile = resolvedProfile
+            };
+        }
+
+        if (resolvedOptions.RuntimeRoot != resolvedRuntimeRoot)
+        {
+            resolvedOptions = resolvedOptions with
+            {
+                RuntimeRoot = resolvedRuntimeRoot
+            };
+        }
 
         return new ApplicationBootstrapContext(
+            resolvedBoundary,
             new HostBootstrapContext(
                 resolvedBoundary.ConfigurationProvider,
                 resolvedBoundary.ConfigurationSnapshot,
@@ -84,6 +103,43 @@ public static class ApplicationCompositionRoot
             resolvedOptions,
             presentationOptions ?? CreatePresentationOptions(resolvedOptions),
             modules ?? Array.Empty<IFusionModule>());
+    }
+
+    /// <summary>
+    /// 创建面向 UI 的最小启动描述。
+    /// </summary>
+    public static ApplicationUiBootstrapDescriptor CreateUiBootstrapDescriptor(
+        ApplicationBootstrapContext? bootstrapContext = null)
+    {
+        var context = bootstrapContext ?? CreateBootstrapContext();
+        var runtimeDescriptor = CreateRuntimeDescriptor(context);
+
+        return new ApplicationUiBootstrapDescriptor(
+            context.PresentationOptions.ShellTitle,
+            context.PresentationOptions.StartRoute,
+            context.PresentationOptions.StartupMessage,
+            context.PresentationOptions.ReadOnlyEntryPoints.ToArray(),
+            runtimeDescriptor);
+    }
+
+    /// <summary>
+    /// 创建完整的应用装配结果。
+    /// </summary>
+    public static ApplicationAssembly CreateAssembly(
+        ApplicationBootstrapContext? bootstrapContext = null)
+    {
+        var context = bootstrapContext ?? CreateBootstrapContext();
+        var runtimeDescriptor = CreateRuntimeDescriptor(context);
+        var uiBootstrapDescriptor = CreateUiBootstrapDescriptor(context);
+        var runtime = new ApplicationRuntime(runtimeDescriptor, CreateHostBuilder(context).Build());
+
+        return new ApplicationAssembly(
+            context.Options,
+            context.Boundary,
+            context,
+            runtimeDescriptor,
+            uiBootstrapDescriptor,
+            runtime);
     }
 
     /// <summary>
@@ -113,7 +169,7 @@ public static class ApplicationCompositionRoot
     }
 
     /// <summary>
-    /// 创建宿主构造器，便于上层自行决定何时生成运行体。
+    /// 创建宿主构造器。
     /// </summary>
     public static HostRuntimeBuilder CreateHostBuilder(
         ApplicationBootstrapContext? bootstrapContext = null)
@@ -143,11 +199,56 @@ public static class ApplicationCompositionRoot
     public static ApplicationRuntime Build(
         ApplicationBootstrapContext? bootstrapContext = null)
     {
-        var context = bootstrapContext ?? CreateBootstrapContext();
-        var hostBuilder = CreateHostBuilder(context);
-        var host = hostBuilder.Build();
-        var descriptor = CreateRuntimeDescriptor(context);
+        return CreateAssembly(bootstrapContext).Runtime;
+    }
 
-        return new ApplicationRuntime(descriptor, host);
+    /// <summary>
+    /// 解析最终使用的运行根。
+    /// </summary>
+    private static RuntimeRootOptions ResolveRuntimeRoot(
+        ApplicationBoundary boundary,
+        ApplicationOptions? options)
+    {
+        if (options is not null)
+        {
+            return options.RuntimeRoot;
+        }
+
+        if (boundary.ConfigurationProvider is not null)
+        {
+            return boundary.ConfigurationProvider.GetRuntimeRoot();
+        }
+
+        if (boundary.ConfigurationSnapshot is not null)
+        {
+            return boundary.ConfigurationSnapshot.RuntimeRoot;
+        }
+
+        return RuntimeRootOptions.CreateDefault();
+    }
+
+    /// <summary>
+    /// 解析最终使用的 profile。
+    /// </summary>
+    private static string? ResolveProfile(
+        ApplicationBoundary boundary,
+        ApplicationOptions? options)
+    {
+        if (options is not null && !string.IsNullOrWhiteSpace(options.Profile))
+        {
+            return options.Profile;
+        }
+
+        if (boundary.ConfigurationProvider is not null)
+        {
+            return boundary.ConfigurationProvider.GetProfile().ProfileName;
+        }
+
+        if (boundary.ConfigurationSnapshot is not null)
+        {
+            return boundary.ConfigurationSnapshot.Profile.ProfileName;
+        }
+
+        return null;
     }
 }
