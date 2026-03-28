@@ -1,14 +1,22 @@
+using FusionApp.Composition;
+using FusionConfig.Abstractions;
+using FusionConfig.Profiles;
+using FusionConfig.Providers;
+using FusionConfig.Runtime;
 using FusionConfig.Sections;
+using FusionConfig.Snapshots;
+using FusionKernel;
 using FusionKernel.Composition;
 using FusionKernel.Hosting;
 using FusionKernel.Modules;
 using FusionKernel.Results;
 using FusionKernel.Runtime;
+using FusionLog.Context;
+using FusionLog.Writers;
 using FusionUI.Composition;
 using FusionUI.Models;
 using FusionUI.Navigation;
 using FusionUI.Projections;
-using FusionUI.Shell;
 using FusionUI.ViewModels;
 
 namespace FusionUI.Tests;
@@ -136,6 +144,45 @@ public sealed class UiShellSkeletonTests
 
         Assert.True(shell.Navigation.Sections.Count >= 2);
         Assert.Contains(shell.Navigation.Sections.SelectMany(section => section.Items), item => item.Route == UiRoute.Logs);
+    }
+
+    [Fact]
+    public void Ui_Composition_Root_Can_Create_Shell_From_Application_Assembly()
+    {
+        var runtimeRoot = RuntimeRootOptions.CreateDefault(@"R:\", @"D:\FusionRuntime");
+        var profile = new EnvironmentProfile("dev", ConfigurationProfileKind.Development, "Development");
+        var snapshot = new ConfigurationSnapshot(
+            profile,
+            runtimeRoot,
+            new IConfigurationSection[]
+            {
+                new AppSettingsSection(runtimeRoot, profile),
+                new UiSection(true, runtimeRoot.ConfigPath),
+            });
+        var provider = new DefaultConfigurationProvider(snapshot);
+        var boundary = ApplicationCompositionRoot.CreateBoundary(
+            provider,
+            snapshot,
+            new NullLoggerWriter(),
+            new LogContext(
+                new HostLogContext("FusionHost", "Fusion Host"),
+                new ProcessLogContext("FusionApp", "Fusion App"),
+                new ModuleLogContext("FusionUI", "FusionUI", "Instance-01")));
+        var assembly = ApplicationCompositionRoot.CreateAssembly(
+            ApplicationCompositionRoot.CreateBootstrapContext(
+                boundary,
+                modules:
+                [
+                    new PlatformModule()
+                ]));
+
+        var shell = UiCompositionRoot.CreateShell(assembly);
+        var runtimeDescriptor = UiCompositionRoot.CreateRuntimeDescriptor(assembly);
+
+        Assert.Equal("FusionCore", shell.ApplicationTitle);
+        Assert.Equal("Fusion Host", shell.RuntimeSummary.Host.HostName);
+        Assert.Equal("FusionCore", runtimeDescriptor.ApplicationTitle);
+        Assert.Contains(runtimeDescriptor.Dependencies, dependency => dependency.DependencyName == "Config" && dependency.IsConnected);
     }
 
     private static RuntimeSummaryModel CreateRuntimeSummary()
