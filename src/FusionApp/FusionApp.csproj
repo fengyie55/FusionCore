@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <ProjectReference Include="..\FusionConfig\FusionConfig.csproj" />
     <ProjectReference Include="..\FusionKernel\FusionKernel.csproj" />
-    <ProjectReference Include="..\FusionDomain\FusionDomain.csproj" />
-    <ProjectReference Include="..\FusionEquipment.Abstractions\FusionEquipment.Abstractions.csproj" />
+    <ProjectReference Include="..\FusionLog\FusionLog.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
