@@ -91,3 +91,10 @@ R:\
     versions\
     packages\
   scripts\
+
+Additional guidance:
+- `data\` is a logical data boundary, not a catch-all bucket
+- configuration files still belong under `config\`
+- log outputs still belong under `logs\`
+- process-private transient state still belongs under `runtime\` or `temp\`
+- for `FusionData` P1 classification details, see `data-classification-matrix.md` and `data-storage-conventions.md`
