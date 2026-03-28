@@ -22,6 +22,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\FusionApp\FusionApp.csproj" />
+    <ProjectReference Include="..\..\src\FusionKernel\FusionKernel.csproj" />
+    <ProjectReference Include="..\..\src\FusionConfig\FusionConfig.csproj" />
+    <ProjectReference Include="..\..\src\FusionLog\FusionLog.csproj" />
   </ItemGroup>
 
 </Project>
