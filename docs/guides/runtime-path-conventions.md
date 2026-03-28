@@ -96,5 +96,7 @@ Additional guidance:
 - `data\` is a logical data boundary, not a catch-all bucket
 - configuration files still belong under `config\`
 - log outputs still belong under `logs\`
+- when a module-level logging option uses a relative log path, treat it as a child path under `logs\`
+- when a logging option leaves the path empty, use the runtime root's default `logs\` path
 - process-private transient state still belongs under `runtime\` or `temp\`
 - for `FusionData` P1 classification details, see `data-classification-matrix.md` and `data-storage-conventions.md`

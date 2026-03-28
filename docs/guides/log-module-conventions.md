@@ -58,6 +58,10 @@
 - `LoggingOptionsBinder`
   - 只负责把 `LoggingSection` 或 `IConfigurationProvider` 映射为 `LoggingWriterOptions`
   - 不负责配置系统本身
+  - 路径解析规则保持最小且明确：
+    - `LogsPath` 为空时，回退到 `RuntimeRootOptions.LogsPath`
+    - `LogsPath` 为绝对路径时，直接使用
+    - `LogsPath` 为相对路径时，按 `RuntimeRootOptions.LogsPath` 下的子目录处理
 - `DefaultLoggerWriterFactory`
   - 只负责最小显式装配
   - 不做反射扫描、自动注册或复杂 provider 管线
