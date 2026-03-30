@@ -36,7 +36,7 @@ public sealed class StudioShellViewModel : ObservableObject
     public StudioNavigationViewModel Navigation { get; }
 
     /// <summary>
-    /// 获取运行摘要。
+    /// 获取运行摘要描述。
     /// </summary>
     public StudioRuntimeDescriptor RuntimeDescriptor { get; }
 

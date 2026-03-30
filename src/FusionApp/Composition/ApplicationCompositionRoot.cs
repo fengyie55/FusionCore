@@ -123,6 +123,29 @@ public static class ApplicationCompositionRoot
     }
 
     /// <summary>
+    /// 创建面向 FusionStudio 的最小启动描述。
+    /// </summary>
+    public static ApplicationStudioBootstrapDescriptor CreateStudioBootstrapDescriptor(
+        ApplicationBootstrapContext? bootstrapContext = null)
+    {
+        var context = bootstrapContext ?? CreateBootstrapContext();
+        var runtimeDescriptor = CreateRuntimeDescriptor(context);
+
+        return new ApplicationStudioBootstrapDescriptor(
+            "FusionStudio",
+            "ConfigurationWorkbench",
+            "准备进入平台工程工作台",
+            [
+                "ConfigurationWorkbench",
+                "LogsWorkbench",
+                "RuntimeDiagnostics",
+                "DebugAssistant",
+                "ModuleExplorer"
+            ],
+            runtimeDescriptor);
+    }
+
+    /// <summary>
     /// 创建完整的应用装配结果。
     /// </summary>
     public static ApplicationAssembly CreateAssembly(
@@ -131,6 +154,7 @@ public static class ApplicationCompositionRoot
         var context = bootstrapContext ?? CreateBootstrapContext();
         var runtimeDescriptor = CreateRuntimeDescriptor(context);
         var uiBootstrapDescriptor = CreateUiBootstrapDescriptor(context);
+        var studioBootstrapDescriptor = CreateStudioBootstrapDescriptor(context);
         var runtime = new ApplicationRuntime(runtimeDescriptor, CreateHostBuilder(context).Build());
 
         return new ApplicationAssembly(
@@ -139,6 +163,7 @@ public static class ApplicationCompositionRoot
             context,
             runtimeDescriptor,
             uiBootstrapDescriptor,
+            studioBootstrapDescriptor,
             runtime);
     }
 

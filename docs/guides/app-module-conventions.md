@@ -33,15 +33,17 @@
 6. 创建 `ApplicationUiBootstrapDescriptor`
 7. 创建 `UiBootstrapContext`
 8. 创建 `UiRuntimeDescriptor`
-9. 创建 `ApplicationAssembly`
-10. 创建 `ApplicationRuntime`
-11. 通过 `ApplicationRuntime` 转发宿主初始化、启动与停止
+9. 创建 `ApplicationStudioBootstrapDescriptor`
+10. 创建 `ApplicationAssembly`
+11. 创建 `ApplicationRuntime`
+12. 通过 `ApplicationRuntime` 转发宿主初始化、启动与停止
 
 其中：
 - `ApplicationBoundary` 承载配置、日志的外部接线边界
 - `ApplicationBootstrapContext` 承载应用启动时的最小上下文
 - `ApplicationAssembly` 承载一次完整默认装配的结果
 - `ApplicationRuntime` 只负责把宿主流程转发出去，不接管业务真相
+- `ApplicationUiBootstrapDescriptor` 与 `ApplicationStudioBootstrapDescriptor` 分别面向运行 HMI 和工程工作台输出只读启动摘要
 
 ## 3. 与其他模块的边界
 
@@ -60,6 +62,10 @@
 ### 与 `FusionUI`
 
 `FusionApp` 只输出 UI 侧可消费的只读启动摘要和运行态摘要，不直接承载业务页面逻辑。
+
+### 与 `FusionStudio`
+
+`FusionApp` 只输出 Studio 侧可消费的只读启动摘要和运行态摘要，不直接承载工程配置器、日志浏览器或调试助手逻辑。
 
 ## 4. 当前不做什么
 

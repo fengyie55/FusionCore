@@ -57,7 +57,7 @@ public sealed class StudioShellSkeletonTests
     }
 
     [Fact]
-    public void Bootstrap_Context_Can_Be_Created_From_Application_Assembly()
+    public void Application_Assembly_Can_Be_Projected_To_Studio_Context()
     {
         var assembly = CreateApplicationAssembly();
 
@@ -68,6 +68,7 @@ public sealed class StudioShellSkeletonTests
         Assert.Equal("Development", context.RuntimeSummary.Profile);
         Assert.Equal(@"D:\FusionRuntime", context.RuntimeSummary.RuntimeRoot);
         Assert.True(context.ConfigurationSummary.IsConfigurationAvailable);
+        Assert.Equal("ConfigurationWorkbench", assembly.StudioBootstrapDescriptor.StartRoute);
         Assert.Single(context.LogSummary.Entries);
     }
 
@@ -80,6 +81,7 @@ public sealed class StudioShellSkeletonTests
             assembly,
             [CreateLogEntry()]);
 
+        Assert.Equal("FusionStudio", shell.ApplicationTitle);
         Assert.Equal("Development", shell.RuntimeSummary.Profile);
         Assert.Equal(@"D:\FusionRuntime\config", shell.ConfigurationSummary.ConfigRoot);
         Assert.Single(shell.LogSummary.Entries);

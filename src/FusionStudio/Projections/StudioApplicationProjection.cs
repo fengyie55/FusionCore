@@ -24,9 +24,9 @@ public static class StudioApplicationProjection
 
         return new StudioBootstrapContext(
             new StudioShellOptions(
-                "FusionStudio",
+                assembly.StudioBootstrapDescriptor.DisplayTitle,
                 "平台工程工作台",
-                assembly.UiBootstrapDescriptor.StartupMessage),
+                assembly.StudioBootstrapDescriptor.StartupMessage),
             new StudioNavigationOptions(
                 true,
                 true,
@@ -34,7 +34,7 @@ public static class StudioApplicationProjection
                 true,
                 true),
             new StudioRuntimeDescriptor(
-                assembly.UiBootstrapDescriptor.DisplayTitle,
+                assembly.StudioBootstrapDescriptor.DisplayTitle,
                 runtimeSummary.Profile,
                 runtimeSummary.RuntimeRoot,
                 CreateDependencies(assembly)),
