@@ -43,6 +43,18 @@
         <DataTemplate DataType="{x:Type viewModels:DebugAssistantViewModel}">
             <views:DebugAssistantView />
         </DataTemplate>
+
+        <HierarchicalDataTemplate x:Key="EngineeringTreeNodeTemplate"
+                                  ItemsSource="{Binding Children}">
+            <StackPanel Margin="0,2,0,2">
+                <TextBlock FontWeight="SemiBold"
+                           Foreground="#102A43"
+                           Text="{Binding Title}" />
+                <TextBlock FontSize="11"
+                           Foreground="#627D98"
+                           Text="{Binding Summary}" />
+            </StackPanel>
+        </HierarchicalDataTemplate>
     </Window.Resources>
     <Grid Background="#E8EDF3">
         <Grid.RowDefinitions>
@@ -87,7 +99,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="320" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="340" />
+                <ColumnDefinition Width="360" />
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0"
@@ -174,40 +186,36 @@
                     Background="#F4F7FB"
                     CornerRadius="18"
                     Padding="18">
-                <StackPanel>
-                    <TextBlock FontSize="16"
-                               FontWeight="SemiBold"
-                               Foreground="#102A43"
-                               Text="模块摘要" />
-                    <TextBlock Margin="0,6,0,14"
-                               FontSize="12"
-                               Foreground="#627D98"
-                               Text="右侧面板用于快速查看设备模块树与当前工具域的工程入口。" />
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-                    <ItemsControl ItemsSource="{Binding Modules}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Margin="0,0,0,10"
-                                        Padding="12"
-                                        Background="White"
-                                        CornerRadius="12">
-                                    <StackPanel>
-                                        <TextBlock FontWeight="SemiBold"
-                                                   Foreground="#102A43"
-                                                   Text="{Binding ModuleName}" />
-                                        <TextBlock Margin="0,4,0,0"
-                                                   FontSize="12"
-                                                   Foreground="#627D98">
-                                            <Run Text="{Binding ModuleType}" />
-                                            <Run Text=" / " />
-                                            <Run Text="{Binding ModuleState}" />
-                                        </TextBlock>
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
+                    <StackPanel>
+                        <TextBlock FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="#102A43"
+                                   Text="工程树摘要" />
+                        <TextBlock Margin="0,6,0,14"
+                                   FontSize="12"
+                                   Foreground="#627D98"
+                                   Text="右侧面板固定显示设备节点、模块节点和工具节点，便于从任意页面保持工程上下文。" />
+                    </StackPanel>
+
+                    <TreeView Grid.Row="1"
+                              ItemsSource="{Binding EngineeringTree.RootNodes}"
+                              ItemTemplate="{StaticResource EngineeringTreeNodeTemplate}"
+                              Background="Transparent"
+                              BorderThickness="0">
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="TreeViewItem">
+                                <Setter Property="IsExpanded" Value="True" />
+                                <Setter Property="Padding" Value="4" />
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                    </TreeView>
+                </Grid>
             </Border>
         </Grid>
 

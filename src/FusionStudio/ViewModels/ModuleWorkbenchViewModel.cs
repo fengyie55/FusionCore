@@ -3,7 +3,7 @@ using FusionStudio.Models;
 namespace FusionStudio.ViewModels;
 
 /// <summary>
-/// 表示模块工作台页面的视图模型。
+/// 表示模块工作台页面的只读视图模型。
 /// </summary>
 public sealed class ModuleWorkbenchViewModel : PlaceholderViewModelBase
 {
@@ -12,12 +12,23 @@ public sealed class ModuleWorkbenchViewModel : PlaceholderViewModelBase
     /// </summary>
     public IReadOnlyCollection<StudioModuleNodeModel> Modules { get; }
 
-    public ModuleWorkbenchViewModel(IReadOnlyCollection<StudioModuleNodeModel> modules)
+    /// <summary>
+    /// 获取工程树根节点集合。
+    /// </summary>
+    public IReadOnlyCollection<StudioEngineeringNodeModel> EngineeringNodes { get; }
+
+    /// <summary>
+    /// 初始化模块工作台视图模型。
+    /// </summary>
+    public ModuleWorkbenchViewModel(
+        IReadOnlyCollection<StudioModuleNodeModel> modules,
+        StudioEngineeringTreeModel engineeringTree)
         : base(
             "模块工作台",
             "按模块聚合参数、状态、报警、互锁、IO 与调试入口。",
-            "当前阶段只提供模块树与工具域骨架，不实现真实控制面板。")
+            "当前阶段只提供模块工程树与工具域骨架，不实现真实控制面板。")
     {
         Modules = modules;
+        EngineeringNodes = engineeringTree.RootNodes;
     }
 }

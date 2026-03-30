@@ -54,7 +54,8 @@ public static class StudioCompositionRoot
             configurationSummary,
             runtimeSummary,
             logSummary,
-            deviceOverview);
+            deviceOverview,
+            deviceOverview.EngineeringTree);
     }
 
     /// <summary>
@@ -88,7 +89,8 @@ public static class StudioCompositionRoot
             configurationSummary,
             runtimeSummary,
             logSummary,
-            deviceOverview);
+            deviceOverview,
+            deviceOverview.EngineeringTree);
     }
 
     /// <summary>
@@ -106,7 +108,8 @@ public static class StudioCompositionRoot
             context.ConfigurationSummary,
             context.RuntimeSummary,
             context.LogSummary,
-            context.DeviceOverview);
+            context.DeviceOverview,
+            context.EngineeringTree);
 
         var firstRoute = StudioRoute.DeviceOverview;
         var firstItem = shell.Navigation.Sections
@@ -279,7 +282,12 @@ public static class StudioCompositionRoot
                 : "当前尚未接入完整工程配置，仅提供运行与模块摘要入口。",
             runtimeSummary.Profile,
             runtimeSummary.RuntimeRoot,
-            CreateModuleNodes(runtimeSummary.Modules));
+            CreateModuleNodes(runtimeSummary.Modules),
+            CreateEngineeringTree(
+                equipmentName,
+                runtimeSummary.Profile,
+                runtimeSummary.RuntimeRoot,
+                runtimeSummary.Modules));
     }
 
     private static IReadOnlyCollection<StudioModuleNodeModel> CreateModuleNodes(
@@ -294,6 +302,93 @@ public static class StudioCompositionRoot
                 "参数、IO、报警、互锁、状态与调试入口按模块聚合。",
                 CreateDefaultToolEntries(module.ModuleName)))
             .ToArray();
+    }
+
+    private static StudioEngineeringTreeModel CreateEngineeringTree(
+        string equipmentName,
+        string runtimeProfile,
+        string runtimeRoot,
+        IReadOnlyCollection<StudioModuleSummaryModel> modules)
+    {
+        var moduleNodes = modules
+            .Select(module => new StudioEngineeringNodeModel(
+                module.ModuleId,
+                module.ModuleName,
+                StudioEngineeringNodeKind.Module,
+                $"{ResolveModuleType(module.ModuleName)} / {module.State}",
+                module.State,
+                StudioRoute.ModuleWorkbench,
+                CreateToolTreeNodes(module)))
+            .ToArray();
+
+        return new StudioEngineeringTreeModel(
+            equipmentName,
+            [
+                new StudioEngineeringNodeModel(
+                    "Device",
+                    equipmentName,
+                    StudioEngineeringNodeKind.Device,
+                    $"Profile: {runtimeProfile} / RuntimeRoot: {runtimeRoot}",
+                    "Online",
+                    StudioRoute.DeviceOverview,
+                    moduleNodes)
+            ]);
+    }
+
+    private static IReadOnlyCollection<StudioEngineeringNodeModel> CreateToolTreeNodes(
+        StudioModuleSummaryModel module)
+    {
+        return
+        [
+            new StudioEngineeringNodeModel(
+                $"{module.ModuleId}.Parameters",
+                "参数",
+                StudioEngineeringNodeKind.Parameters,
+                $"{module.ModuleName} 的参数与工程配置入口。",
+                null,
+                StudioRoute.ConfigurationWorkbench,
+                Array.Empty<StudioEngineeringNodeModel>()),
+            new StudioEngineeringNodeModel(
+                $"{module.ModuleId}.Io",
+                "IO",
+                StudioEngineeringNodeKind.Io,
+                $"{module.ModuleName} 的 IO 摘要与监控入口。",
+                null,
+                StudioRoute.IoMonitor,
+                Array.Empty<StudioEngineeringNodeModel>()),
+            new StudioEngineeringNodeModel(
+                $"{module.ModuleId}.Alarms",
+                "报警",
+                StudioEngineeringNodeKind.Alarms,
+                $"{module.ModuleName} 的报警定义与映射入口。",
+                null,
+                StudioRoute.AlarmConfiguration,
+                Array.Empty<StudioEngineeringNodeModel>()),
+            new StudioEngineeringNodeModel(
+                $"{module.ModuleId}.Interlocks",
+                "互锁",
+                StudioEngineeringNodeKind.Interlocks,
+                $"{module.ModuleName} 的互锁与工程约束入口。",
+                null,
+                StudioRoute.InterlockManagement,
+                Array.Empty<StudioEngineeringNodeModel>()),
+            new StudioEngineeringNodeModel(
+                $"{module.ModuleId}.State",
+                "状态",
+                StudioEngineeringNodeKind.State,
+                $"{module.ModuleName} 的运行状态与诊断摘要。",
+                module.State,
+                StudioRoute.RuntimeDiagnostics,
+                Array.Empty<StudioEngineeringNodeModel>()),
+            new StudioEngineeringNodeModel(
+                $"{module.ModuleId}.Debug",
+                "调试",
+                StudioEngineeringNodeKind.Debug,
+                $"{module.ModuleName} 的工程调试与控制入口。",
+                null,
+                StudioRoute.ControlConsole,
+                Array.Empty<StudioEngineeringNodeModel>())
+        ];
     }
 
     private static IReadOnlyCollection<StudioModuleToolEntryModel> CreateDefaultToolEntries(string moduleName)

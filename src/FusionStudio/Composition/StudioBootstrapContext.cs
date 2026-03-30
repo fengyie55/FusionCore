@@ -12,4 +12,5 @@ public sealed record StudioBootstrapContext(
     StudioConfigurationSummaryModel ConfigurationSummary,
     StudioRuntimeSummaryModel RuntimeSummary,
     StudioLogSummaryModel LogSummary,
-    StudioDeviceOverviewModel DeviceOverview);
+    StudioDeviceOverviewModel DeviceOverview,
+    StudioEngineeringTreeModel EngineeringTree);

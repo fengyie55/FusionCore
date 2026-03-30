@@ -13,6 +13,11 @@ public sealed class DeviceOverviewViewModel
     public StudioDeviceOverviewModel Overview { get; }
 
     /// <summary>
+    /// 获取设备工程树摘要。
+    /// </summary>
+    public StudioEngineeringTreeModel EngineeringTree => Overview.EngineeringTree;
+
+    /// <summary>
     /// 初始化设备总览视图模型。
     /// </summary>
     public DeviceOverviewViewModel(StudioDeviceOverviewModel overview)
