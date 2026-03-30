@@ -1,6 +1,9 @@
+using FusionApp.Composition;
+using FusionLog.Entries;
 using FusionStudio.Layout;
 using FusionStudio.Models;
 using FusionStudio.Navigation;
+using FusionStudio.Projections;
 using FusionStudio.Shell;
 
 namespace FusionStudio.Composition;
@@ -30,7 +33,20 @@ public static class StudioCompositionRoot
                 "FusionStudio",
                 "未接入",
                 "未接入",
-                CreateDefaultDependencies()));
+                CreateDefaultDependencies()),
+            StudioConfigurationSummaryModel.Empty,
+            StudioRuntimeSummaryModel.Empty,
+            StudioLogSummaryModel.Empty);
+    }
+
+    /// <summary>
+    /// 从应用装配结果创建默认接线上下文。
+    /// </summary>
+    public static StudioBootstrapContext CreateBootstrapContext(
+        ApplicationAssembly assembly,
+        IReadOnlyCollection<LogEntry>? logEntries = null)
+    {
+        return StudioApplicationProjection.CreateBootstrapContext(assembly, logEntries);
     }
 
     /// <summary>
@@ -44,11 +60,24 @@ public static class StudioCompositionRoot
             CreateLayoutDescriptor(),
             CreateNavigation(context.NavigationOptions),
             CreateStatusModel(context),
-            context.RuntimeDescriptor);
+            context.RuntimeDescriptor,
+            context.ConfigurationSummary,
+            context.RuntimeSummary,
+            context.LogSummary);
 
         var firstItem = shell.Navigation.Sections.SelectMany(section => section.Items).First();
         shell.NavigateTo(firstItem);
         return shell;
+    }
+
+    /// <summary>
+    /// 从应用装配结果创建工作台壳层。
+    /// </summary>
+    public static StudioShellViewModel CreateShell(
+        ApplicationAssembly assembly,
+        IReadOnlyCollection<LogEntry>? logEntries = null)
+    {
+        return CreateShell(CreateBootstrapContext(assembly, logEntries));
     }
 
     private static StudioLayoutDescriptor CreateLayoutDescriptor()
@@ -110,9 +139,9 @@ public static class StudioCompositionRoot
         }
 
         return new StudioNavigationViewModel(
-            [
-                new NavigationSection("工程工作台", workbenchItems)
-            ]);
+        [
+            new NavigationSection("工程工作台", workbenchItems)
+        ]);
     }
 
     private static StudioStatusModel CreateStatusModel(StudioBootstrapContext context)

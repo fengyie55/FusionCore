@@ -15,5 +15,57 @@
             <TextBlock Foreground="#1F6F5C"
                        Text="{Binding Hint}" />
         </Border>
+        <Border Margin="0,16,0,0"
+                Padding="16"
+                Background="#F8FAFC"
+                BorderBrush="#D9E2EC"
+                BorderThickness="1"
+                CornerRadius="12">
+            <UniformGrid Columns="2"
+                         Rows="3">
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock FontWeight="SemiBold"
+                               Foreground="#334E68"
+                               Text="Host" />
+                    <TextBlock Foreground="#102A43"
+                               Text="{Binding Summary.HostName}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock FontWeight="SemiBold"
+                               Foreground="#334E68"
+                               Text="HostState" />
+                    <TextBlock Foreground="#102A43"
+                               Text="{Binding Summary.HostState}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock FontWeight="SemiBold"
+                               Foreground="#334E68"
+                               Text="Initialization" />
+                    <TextBlock Foreground="#102A43"
+                               Text="{Binding Summary.InitializationState}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock FontWeight="SemiBold"
+                               Foreground="#334E68"
+                               Text="InstanceId" />
+                    <TextBlock Foreground="#102A43"
+                               Text="{Binding Summary.RuntimeInstanceId}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock FontWeight="SemiBold"
+                               Foreground="#334E68"
+                               Text="Profile" />
+                    <TextBlock Foreground="#102A43"
+                               Text="{Binding Summary.Profile}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock FontWeight="SemiBold"
+                               Foreground="#334E68"
+                               Text="RuntimeRoot" />
+                    <TextBlock Foreground="#102A43"
+                               Text="{Binding Summary.RuntimeRoot}" />
+                </StackPanel>
+            </UniformGrid>
+        </Border>
     </StackPanel>
 </UserControl>

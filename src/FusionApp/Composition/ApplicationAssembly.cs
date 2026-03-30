@@ -12,6 +12,7 @@ public sealed record ApplicationAssembly(
     ApplicationBootstrapContext BootstrapContext,
     ApplicationRuntimeDescriptor RuntimeDescriptor,
     ApplicationUiBootstrapDescriptor UiBootstrapDescriptor,
+    ApplicationStudioBootstrapDescriptor StudioBootstrapDescriptor,
     ApplicationRuntime Runtime)
 {
     /// <summary>
