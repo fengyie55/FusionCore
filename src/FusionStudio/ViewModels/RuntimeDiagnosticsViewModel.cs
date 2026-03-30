@@ -1,15 +1,32 @@
+using FusionStudio.Composition;
+using FusionStudio.Models;
+
 namespace FusionStudio.ViewModels;
 
 /// <summary>
-/// 表示运行诊断工作台的占位视图模型。
+/// 表示运行诊断工作页的占位视图模型。
 /// </summary>
 public sealed class RuntimeDiagnosticsViewModel : PlaceholderViewModelBase
 {
-    public RuntimeDiagnosticsViewModel()
+    /// <summary>
+    /// 获取设备总览摘要。
+    /// </summary>
+    public StudioDeviceOverviewModel Overview { get; }
+
+    /// <summary>
+    /// 获取运行时摘要。
+    /// </summary>
+    public StudioRuntimeDescriptor RuntimeDescriptor { get; }
+
+    public RuntimeDiagnosticsViewModel(
+        StudioDeviceOverviewModel overview,
+        StudioRuntimeDescriptor runtimeDescriptor)
         : base(
             "运行诊断",
-            "用于宿主状态、模块状态和运行摘要入口的占位页面。",
-            "当前阶段只保留只读摘要入口，不实现诊断系统。")
+            "用于查看宿主、运行实例与模块状态摘要的只读工程入口。",
+            "当前阶段只承载诊断摘要，不实现健康检查平台与自动恢复机制。")
     {
+        Overview = overview;
+        RuntimeDescriptor = runtimeDescriptor;
     }
 }

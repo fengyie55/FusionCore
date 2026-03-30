@@ -1,3 +1,5 @@
+using FusionStudio.Models;
+
 namespace FusionStudio.Composition;
 
 /// <summary>
@@ -6,4 +8,5 @@ namespace FusionStudio.Composition;
 public sealed record StudioBootstrapContext(
     StudioShellOptions ShellOptions,
     StudioNavigationOptions NavigationOptions,
-    StudioRuntimeDescriptor RuntimeDescriptor);
+    StudioRuntimeDescriptor RuntimeDescriptor,
+    StudioDeviceOverviewModel DeviceOverview);

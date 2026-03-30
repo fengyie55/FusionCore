@@ -1,8 +1,8 @@
-# FusionStudio 模块约定（P1）
+# FusionStudio 模块约定
 
 ## 1. 目标
 
-本约定用于限制 `FusionStudio` 的实现边界，确保其作为工程工作台模块推进，而不是演变为跨层总控模块。
+本约定用于约束 `FusionStudio` 的实现边界，确保它作为工程工作台推进，而不是演变成跨层总控模块。
 
 ## 2. 目录与命名约定
 
@@ -19,64 +19,66 @@
 - `FusionStudio.Shell`
 - `FusionStudio.Navigation`
 - `FusionStudio.Composition`
+- `FusionStudio.Models`
 
 ## 3. 依赖方向约定
 
-允许依赖方向：
-- `FusionStudio -> FusionApp`（应用装配摘要）
-- `FusionStudio -> FusionConfig`（section 与只读配置边界）
-- `FusionStudio -> FusionKernel`（宿主摘要模型）
-- `FusionStudio -> FusionLog`（日志摘要模型）
+允许依赖：
+- `FusionStudio -> FusionApp`
+- `FusionStudio -> FusionConfig`
+- `FusionStudio -> FusionKernel`
+- `FusionStudio -> FusionLog`
 
-禁止依赖方向：
-- 不直接依赖 `FusionDomain` 业务真相对象作为 UI 唯一数据源。
-- 不直接依赖 `FusionScheduler` 或 `FusionFA` 的内部实现对象。
-- 不引入数据库、ORM、消息中间件依赖。
+禁止依赖：
+- 不直接依赖 `FusionDomain` 内部真相对象作为唯一数据源
+- 不直接依赖 `FusionScheduler` 或 `FusionFA` 的内部实现对象
+- 不引入数据库、ORM、消息中间件依赖
 
-## 4. 只读接线约定
+## 4. 信息组织约定
 
-`FusionStudio` 仅消费以下类型输入：
+`FusionStudio` 不按 E95 HMI 风格组织界面，而按工程对象和工具域组织：
+- 设备总览
+- 工程配置
+- 报警配置
+- 互锁管理
+- 模块工作台
+- IO 监控
+- 运行诊断
+- 详细日志
+- 工程控制台
+- 调试助手
+
+首页应优先显示整机摘要与模块总览，而不是普通菜单页。
+
+## 5. 接线约定
+
+`FusionStudio` 仅消费以下只读输入：
 - Bootstrap Context
 - Runtime Summary
+- Module Summary
+- Configuration Summary
 - Log Summary
-- Config Mapping Result
 
 禁止：
-- 在 `ViewModel` 中直接执行调度控制、设备控制、协议交互。
-- 在 `ViewModel` 中直接写配置与日志基础设施。
+- 在 `ViewModel` 中直接执行设备控制
+- 在 `ViewModel` 中直接写配置和日志基础设施
+- 依赖全局静态状态作为唯一真相
 
-## 5. E95 对齐约定
+## 6. 当前阶段不做
 
-`FusionStudio` 为工程工作台，不替代 `FusionUI` 的运行 HMI。  
-其信息组织应遵循“工程入口清晰、运行入口只读、调试入口隔离”的原则。
-
-建议优先入口：
-- 工程配置
-- 日志详细入口
-- 运行诊断
-- 调试助手
-- 模块状态
-
-## 6. 当前阶段不做项
-
-当前阶段（P1）明确不做：
+当前阶段明确不做：
 - 真实配置编辑器
-- 真实日志检索引擎
-- 真实调试执行工具
-- 复杂页面框架与插件系统
-- 权限系统、国际化、复杂主题系统
+- 日志检索与过滤引擎
+- 调试命令执行器
+- 复杂插件系统
+- 权限系统
+- 多语言系统
+- 主题系统
 
-## 7. 后续进入 P2 的实现边界
+## 7. 扩展原则
 
-P2 可做：
-- 最小 Shell
-- 最小导航
-- 最小占位页面
-- 只读摘要展示
-- 最小组合入口
-
-P2 仍不做：
-- 业务逻辑
-- 调度算法
-- 协议实现
-- 数据存储实现
+`FusionStudio` 允许扩展，但扩展点应保持轻量和显式：
+- 优先按工具域扩展
+- 优先按模块工作页扩展
+- 不提前构建重型插件框架
+- 不把工具入口做成跨层万能调用口
