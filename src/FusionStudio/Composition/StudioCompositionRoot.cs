@@ -1,6 +1,9 @@
+using FusionApp.Composition;
+using FusionLog.Entries;
 using FusionStudio.Layout;
 using FusionStudio.Models;
 using FusionStudio.Navigation;
+using FusionStudio.Projections;
 using FusionStudio.Shell;
 
 namespace FusionStudio.Composition;
@@ -19,7 +22,7 @@ public static class StudioCompositionRoot
             new StudioShellOptions(
                 "FusionStudio",
                 "平台工程工作台",
-                "当前仅提供工程配置、日志、运行诊断与调试入口占位。"),
+                "当前仅提供工程配置、详细日志、运行诊断与调试入口的只读骨架。"),
             new StudioNavigationOptions(
                 true,
                 true,
@@ -30,7 +33,20 @@ public static class StudioCompositionRoot
                 "FusionStudio",
                 "未接入",
                 "未接入",
-                CreateDefaultDependencies()));
+                CreateDefaultDependencies()),
+            StudioConfigurationSummaryModel.Empty,
+            StudioRuntimeSummaryModel.Empty,
+            StudioLogSummaryModel.Empty);
+    }
+
+    /// <summary>
+    /// 从应用装配结果创建默认接线上下文。
+    /// </summary>
+    public static StudioBootstrapContext CreateBootstrapContext(
+        ApplicationAssembly assembly,
+        IReadOnlyCollection<LogEntry>? logEntries = null)
+    {
+        return StudioApplicationProjection.CreateBootstrapContext(assembly, logEntries);
     }
 
     /// <summary>
@@ -44,11 +60,26 @@ public static class StudioCompositionRoot
             CreateLayoutDescriptor(),
             CreateNavigation(context.NavigationOptions),
             CreateStatusModel(context),
-            context.RuntimeDescriptor);
+            context.RuntimeDescriptor,
+            context.ConfigurationSummary,
+            context.RuntimeSummary,
+            context.LogSummary);
 
-        var firstItem = shell.Navigation.Sections.SelectMany(section => section.Items).First();
+        var firstItem = shell.Navigation.Sections
+            .SelectMany(section => section.Items)
+            .First();
         shell.NavigateTo(firstItem);
         return shell;
+    }
+
+    /// <summary>
+    /// 从应用装配结果创建工作台壳层。
+    /// </summary>
+    public static StudioShellViewModel CreateShell(
+        ApplicationAssembly assembly,
+        IReadOnlyCollection<LogEntry>? logEntries = null)
+    {
+        return CreateShell(CreateBootstrapContext(assembly, logEntries));
     }
 
     private static StudioLayoutDescriptor CreateLayoutDescriptor()
@@ -69,7 +100,7 @@ public static class StudioCompositionRoot
             workbenchItems.Add(new NavigationItem(
                 StudioRoute.ConfigurationWorkbench,
                 "工程配置",
-                "用于设备工程配置与参数组织的入口占位。",
+                "用于设备工程配置与参数组织入口的只读占位。",
                 "工程工作台"));
         }
 
@@ -78,7 +109,7 @@ public static class StudioCompositionRoot
             workbenchItems.Add(new NavigationItem(
                 StudioRoute.LogsWorkbench,
                 "详细日志",
-                "用于日志检视与故障追踪入口的占位。",
+                "用于日志检视与故障追踪入口的只读占位。",
                 "工程工作台"));
         }
 
@@ -105,14 +136,14 @@ public static class StudioCompositionRoot
             workbenchItems.Add(new NavigationItem(
                 StudioRoute.ModuleExplorer,
                 "模块状态",
-                "用于平台模块摘要与连接状态入口的占位。",
+                "用于平台模块摘要与连接状态入口的只读占位。",
                 "工程工作台"));
         }
 
         return new StudioNavigationViewModel(
-            [
-                new NavigationSection("工程工作台", workbenchItems)
-            ]);
+        [
+            new NavigationSection("工程工作台", workbenchItems)
+        ]);
     }
 
     private static StudioStatusModel CreateStatusModel(StudioBootstrapContext context)

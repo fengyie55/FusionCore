@@ -1,6 +1,18 @@
+using FusionApp.Composition;
+using FusionConfig.Profiles;
+using FusionConfig.Providers;
+using FusionConfig.Runtime;
+using FusionConfig.Sections;
+using FusionConfig.Snapshots;
+using FusionKernel;
+using FusionLog.Categories;
+using FusionLog.Context;
+using FusionLog.Entries;
+using FusionLog.Levels;
 using FusionStudio.Composition;
+using FusionStudio.Models;
 using FusionStudio.Navigation;
-using FusionStudio.Shell;
+using FusionStudio.Projections;
 using FusionStudio.ViewModels;
 
 namespace FusionStudio.Tests;
@@ -15,6 +27,7 @@ public sealed class StudioShellSkeletonTests
         Assert.Equal("FusionStudio", context.ShellOptions.ApplicationTitle);
         Assert.True(context.NavigationOptions.IncludeConfigurationEntry);
         Assert.Equal(4, context.RuntimeDescriptor.Dependencies.Count);
+        Assert.Equal(StudioRuntimeSummaryModel.Empty, context.RuntimeSummary);
     }
 
     [Fact]
@@ -26,6 +39,7 @@ public sealed class StudioShellSkeletonTests
         Assert.NotNull(shell.Navigation);
         Assert.NotNull(shell.Status);
         Assert.NotNull(shell.CurrentViewModel);
+        Assert.Equal(StudioConfigurationSummaryModel.Empty, shell.ConfigurationSummary);
     }
 
     [Fact]
@@ -38,7 +52,81 @@ public sealed class StudioShellSkeletonTests
 
         shell.NavigateTo(debugItem);
 
-        Assert.Equal("调试助手", shell.CurrentViewTitle);
+        Assert.Equal(debugItem.Title, shell.CurrentViewTitle);
         Assert.IsType<DebugAssistantViewModel>(shell.CurrentViewModel);
+    }
+
+    [Fact]
+    public void Bootstrap_Context_Can_Be_Created_From_Application_Assembly()
+    {
+        var assembly = CreateApplicationAssembly();
+
+        var context = StudioCompositionRoot.CreateBootstrapContext(
+            assembly,
+            [CreateLogEntry()]);
+
+        Assert.Equal("Development", context.RuntimeSummary.Profile);
+        Assert.Equal(@"D:\FusionRuntime", context.RuntimeSummary.RuntimeRoot);
+        Assert.True(context.ConfigurationSummary.IsConfigurationAvailable);
+        Assert.Single(context.LogSummary.Entries);
+    }
+
+    [Fact]
+    public void Shell_Can_Be_Created_From_Application_Assembly()
+    {
+        var assembly = CreateApplicationAssembly();
+
+        var shell = StudioCompositionRoot.CreateShell(
+            assembly,
+            [CreateLogEntry()]);
+
+        Assert.Equal("Development", shell.RuntimeSummary.Profile);
+        Assert.Equal(@"D:\FusionRuntime\config", shell.ConfigurationSummary.ConfigRoot);
+        Assert.Single(shell.LogSummary.Entries);
+        Assert.IsType<ConfigurationWorkbenchViewModel>(shell.CurrentViewModel);
+    }
+
+    [Fact]
+    public void Log_Projection_Can_Create_Readonly_Summary()
+    {
+        var summary = StudioLogProjection.FromEntries([CreateLogEntry()]);
+
+        Assert.Single(summary.Entries);
+        Assert.Contains("1", summary.SummaryText);
+        Assert.Equal("FusionKernel.PlatformModule", summary.Entries.Single().Source);
+    }
+
+    private static ApplicationAssembly CreateApplicationAssembly()
+    {
+        var runtimeRoot = RuntimeRootOptions.CreateDefault(physicalRoot: @"D:\FusionRuntime");
+        var snapshot = new ConfigurationSnapshot(
+            new EnvironmentProfile("Development", ConfigurationProfileKind.Development, "DEV"),
+            runtimeRoot,
+            [new UiSection(true, runtimeRoot.ConfigPath)]);
+        var provider = new DefaultConfigurationProvider(snapshot);
+        var boundary = ApplicationCompositionRoot.CreateBoundary(
+            configurationProvider: provider,
+            configurationSnapshot: snapshot);
+        var bootstrapContext = ApplicationCompositionRoot.CreateBootstrapContext(
+            boundary,
+            modules: [new PlatformModule()]);
+
+        return ApplicationCompositionRoot.CreateAssembly(bootstrapContext);
+    }
+
+    private static LogEntry CreateLogEntry()
+    {
+        return new LogEntry(
+            DateTimeOffset.Parse("2026-03-30T10:00:00+08:00"),
+            LogLevel.Information,
+            RuntimeLogCategory.Operation,
+            new LogMessage("Studio log summary entry"),
+            new LogContext(
+                new HostLogContext("FusionHost", "FusionHost"),
+                new ProcessLogContext("FusionProcess", "FusionStudio"),
+                new ModuleLogContext("FusionKernel.PlatformModule", "FusionKernel.PlatformModule", "default")),
+            null,
+            null,
+            Array.Empty<LogProperty>());
     }
 }

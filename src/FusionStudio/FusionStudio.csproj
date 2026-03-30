@@ -1,4 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\FusionApp\FusionApp.csproj" />
+    <ProjectReference Include="..\FusionConfig\FusionConfig.csproj" />
+    <ProjectReference Include="..\FusionKernel\FusionKernel.csproj" />
+    <ProjectReference Include="..\FusionLog\FusionLog.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>

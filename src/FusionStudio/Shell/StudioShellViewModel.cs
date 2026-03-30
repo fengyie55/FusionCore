@@ -41,6 +41,21 @@ public sealed class StudioShellViewModel : ObservableObject
     public StudioRuntimeDescriptor RuntimeDescriptor { get; }
 
     /// <summary>
+    /// 获取工程配置摘要。
+    /// </summary>
+    public StudioConfigurationSummaryModel ConfigurationSummary { get; }
+
+    /// <summary>
+    /// 获取运行态摘要。
+    /// </summary>
+    public StudioRuntimeSummaryModel RuntimeSummary { get; }
+
+    /// <summary>
+    /// 获取日志摘要。
+    /// </summary>
+    public StudioLogSummaryModel LogSummary { get; }
+
+    /// <summary>
     /// 获取当前工作区标题。
     /// </summary>
     public string CurrentViewTitle
@@ -75,13 +90,19 @@ public sealed class StudioShellViewModel : ObservableObject
         StudioLayoutDescriptor layout,
         StudioNavigationViewModel navigation,
         StudioStatusModel status,
-        StudioRuntimeDescriptor runtimeDescriptor)
+        StudioRuntimeDescriptor runtimeDescriptor,
+        StudioConfigurationSummaryModel configurationSummary,
+        StudioRuntimeSummaryModel runtimeSummary,
+        StudioLogSummaryModel logSummary)
     {
         ApplicationTitle = shellOptions.ApplicationTitle;
         ShellSubtitle = shellOptions.ShellSubtitle;
         Layout = layout;
         Navigation = navigation;
         RuntimeDescriptor = runtimeDescriptor;
+        ConfigurationSummary = configurationSummary;
+        RuntimeSummary = runtimeSummary;
+        LogSummary = logSummary;
         _status = status;
         _currentViewTitle = shellOptions.ApplicationTitle;
     }
@@ -95,12 +116,12 @@ public sealed class StudioShellViewModel : ObservableObject
         CurrentViewTitle = item.Title;
         CurrentViewModel = item.Route switch
         {
-            StudioRoute.ConfigurationWorkbench => new ConfigurationWorkbenchViewModel(),
-            StudioRoute.LogsWorkbench => new LogsWorkbenchViewModel(),
-            StudioRoute.RuntimeDiagnostics => new RuntimeDiagnosticsViewModel(),
+            StudioRoute.ConfigurationWorkbench => new ConfigurationWorkbenchViewModel(ConfigurationSummary),
+            StudioRoute.LogsWorkbench => new LogsWorkbenchViewModel(LogSummary),
+            StudioRoute.RuntimeDiagnostics => new RuntimeDiagnosticsViewModel(RuntimeSummary),
             StudioRoute.DebugAssistant => new DebugAssistantViewModel(),
-            StudioRoute.ModuleExplorer => new ModuleExplorerViewModel(),
-            _ => new ConfigurationWorkbenchViewModel()
+            StudioRoute.ModuleExplorer => new ModuleExplorerViewModel(RuntimeSummary.Modules),
+            _ => new ConfigurationWorkbenchViewModel(ConfigurationSummary)
         };
         Status = new StudioStatusModel(
             new[]
