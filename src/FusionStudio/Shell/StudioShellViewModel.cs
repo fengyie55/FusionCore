@@ -41,19 +41,14 @@ public sealed class StudioShellViewModel : ObservableObject
     public StudioRuntimeDescriptor RuntimeDescriptor { get; }
 
     /// <summary>
-    /// 获取工程配置摘要。
+    /// 获取设备总览摘要。
     /// </summary>
-    public StudioConfigurationSummaryModel ConfigurationSummary { get; }
+    public StudioDeviceOverviewModel DeviceOverview { get; }
 
     /// <summary>
-    /// 获取运行态摘要。
+    /// 获取模块树节点集合。
     /// </summary>
-    public StudioRuntimeSummaryModel RuntimeSummary { get; }
-
-    /// <summary>
-    /// 获取日志摘要。
-    /// </summary>
-    public StudioLogSummaryModel LogSummary { get; }
+    public IReadOnlyCollection<StudioModuleNodeModel> Modules => DeviceOverview.Modules;
 
     /// <summary>
     /// 获取当前工作区标题。
@@ -91,18 +86,14 @@ public sealed class StudioShellViewModel : ObservableObject
         StudioNavigationViewModel navigation,
         StudioStatusModel status,
         StudioRuntimeDescriptor runtimeDescriptor,
-        StudioConfigurationSummaryModel configurationSummary,
-        StudioRuntimeSummaryModel runtimeSummary,
-        StudioLogSummaryModel logSummary)
+        StudioDeviceOverviewModel deviceOverview)
     {
         ApplicationTitle = shellOptions.ApplicationTitle;
         ShellSubtitle = shellOptions.ShellSubtitle;
         Layout = layout;
         Navigation = navigation;
         RuntimeDescriptor = runtimeDescriptor;
-        ConfigurationSummary = configurationSummary;
-        RuntimeSummary = runtimeSummary;
-        LogSummary = logSummary;
+        DeviceOverview = deviceOverview;
         _status = status;
         _currentViewTitle = shellOptions.ApplicationTitle;
     }
@@ -116,19 +107,26 @@ public sealed class StudioShellViewModel : ObservableObject
         CurrentViewTitle = item.Title;
         CurrentViewModel = item.Route switch
         {
-            StudioRoute.ConfigurationWorkbench => new ConfigurationWorkbenchViewModel(ConfigurationSummary),
-            StudioRoute.LogsWorkbench => new LogsWorkbenchViewModel(LogSummary),
-            StudioRoute.RuntimeDiagnostics => new RuntimeDiagnosticsViewModel(RuntimeSummary),
+            StudioRoute.DeviceOverview => new DeviceOverviewViewModel(DeviceOverview),
+            StudioRoute.ConfigurationWorkbench => new ConfigurationWorkbenchViewModel(DeviceOverview),
+            StudioRoute.AlarmConfiguration => new AlarmConfigurationViewModel(Modules),
+            StudioRoute.InterlockManagement => new InterlockManagementViewModel(Modules),
+            StudioRoute.ModuleWorkbench => new ModuleWorkbenchViewModel(Modules),
+            StudioRoute.IoMonitor => new IoMonitorViewModel(Modules),
+            StudioRoute.RuntimeDiagnostics => new RuntimeDiagnosticsViewModel(DeviceOverview, RuntimeDescriptor),
+            StudioRoute.LogsWorkbench => new LogsWorkbenchViewModel(Modules),
+            StudioRoute.ControlConsole => new ControlConsoleViewModel(Modules),
             StudioRoute.DebugAssistant => new DebugAssistantViewModel(),
-            StudioRoute.ModuleExplorer => new ModuleExplorerViewModel(RuntimeSummary.Modules),
-            _ => new ConfigurationWorkbenchViewModel(ConfigurationSummary)
+            _ => new DeviceOverviewViewModel(DeviceOverview)
         };
+
         Status = new StudioStatusModel(
             new[]
             {
                 new StudioStatusItem("页面", item.Title),
                 new StudioStatusItem("Profile", RuntimeDescriptor.CurrentProfile),
-                new StudioStatusItem("RuntimeRoot", RuntimeDescriptor.RuntimeRootSummary)
+                new StudioStatusItem("RuntimeRoot", RuntimeDescriptor.RuntimeRootSummary),
+                new StudioStatusItem("模块数", Modules.Count.ToString())
             },
             item.Description);
     }

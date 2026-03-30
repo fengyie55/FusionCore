@@ -12,7 +12,6 @@ using FusionLog.Levels;
 using FusionStudio.Composition;
 using FusionStudio.Models;
 using FusionStudio.Navigation;
-using FusionStudio.Projections;
 using FusionStudio.ViewModels;
 
 namespace FusionStudio.Tests;
@@ -26,34 +25,48 @@ public sealed class StudioShellSkeletonTests
 
         Assert.Equal("FusionStudio", context.ShellOptions.ApplicationTitle);
         Assert.True(context.NavigationOptions.IncludeConfigurationEntry);
-        Assert.Equal(4, context.RuntimeDescriptor.Dependencies.Count);
-        Assert.Equal(StudioRuntimeSummaryModel.Empty, context.RuntimeSummary);
+        Assert.True(context.NavigationOptions.IncludeAlarmEntry);
+        Assert.True(context.NavigationOptions.IncludeModuleWorkbenchEntry);
+        Assert.NotEmpty(context.DeviceOverview.Modules);
     }
 
     [Fact]
-    public void Shell_Can_Be_Created_From_Default_Context()
+    public void Shell_Default_Page_Is_Device_Overview()
     {
         var shell = StudioCompositionRoot.CreateShell();
 
         Assert.Equal("FusionStudio", shell.ApplicationTitle);
         Assert.NotNull(shell.Navigation);
         Assert.NotNull(shell.Status);
-        Assert.NotNull(shell.CurrentViewModel);
-        Assert.Equal(StudioConfigurationSummaryModel.Empty, shell.ConfigurationSummary);
+        Assert.IsType<DeviceOverviewViewModel>(shell.CurrentViewModel);
     }
 
     [Fact]
-    public void Navigation_Can_Switch_To_Debug_Assistant()
+    public void Navigation_Can_Switch_To_Control_Console()
     {
         var shell = StudioCompositionRoot.CreateShell();
-        var debugItem = shell.Navigation.Sections
+        var item = shell.Navigation.Sections
             .SelectMany(section => section.Items)
-            .Single(item => item.Route == StudioRoute.DebugAssistant);
+            .Single(entry => entry.Route == StudioRoute.ControlConsole);
 
-        shell.NavigateTo(debugItem);
+        shell.NavigateTo(item);
 
-        Assert.Equal(debugItem.Title, shell.CurrentViewTitle);
-        Assert.IsType<DebugAssistantViewModel>(shell.CurrentViewModel);
+        Assert.Equal("工程控制台", shell.CurrentViewTitle);
+        Assert.IsType<ControlConsoleViewModel>(shell.CurrentViewModel);
+    }
+
+    [Fact]
+    public void Navigation_Can_Switch_To_Module_Workbench()
+    {
+        var shell = StudioCompositionRoot.CreateShell();
+        var item = shell.Navigation.Sections
+            .SelectMany(section => section.Items)
+            .Single(entry => entry.Route == StudioRoute.ModuleWorkbench);
+
+        shell.NavigateTo(item);
+
+        Assert.Equal("模块工作台", shell.CurrentViewTitle);
+        Assert.IsType<ModuleWorkbenchViewModel>(shell.CurrentViewModel);
     }
 
     [Fact]

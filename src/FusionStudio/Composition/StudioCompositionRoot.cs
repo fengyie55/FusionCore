@@ -9,44 +9,44 @@ using FusionStudio.Shell;
 namespace FusionStudio.Composition;
 
 /// <summary>
-/// 提供 FusionStudio 的最小组合入口。
+/// 提供 FusionStudio 的最小工程工作台组合入口。
 /// </summary>
 public static class StudioCompositionRoot
 {
     /// <summary>
-    /// 创建默认接线上下文。
+    /// 创建默认工程工作台上下文。
     /// </summary>
     public static StudioBootstrapContext CreateBootstrapContext()
     {
+        var modules = CreateDefaultModules();
+        var deviceOverview = new StudioDeviceOverviewModel(
+            "FusionCore Demo Equipment",
+            "面向设备厂家、开发工程师与现场调试工程师的工程工作台总览。",
+            "Development",
+            "R:\\FusionRuntime\\DemoEquipment",
+            modules);
+
         return new StudioBootstrapContext(
             new StudioShellOptions(
                 "FusionStudio",
-                "平台工程工作台",
-                "当前仅提供工程配置、详细日志、运行诊断与调试入口的只读骨架。"),
+                "设备工程配置与调试工作台",
+                "当前提供设备总览、模块工作台、报警/互锁/IO 与工程调试入口骨架。"),
             new StudioNavigationOptions(
+                true,
+                true,
+                true,
+                true,
                 true,
                 true,
                 true,
                 true,
                 true),
             new StudioRuntimeDescriptor(
-                "FusionStudio",
-                "未接入",
-                "未接入",
+                deviceOverview.EquipmentName,
+                deviceOverview.RuntimeProfile,
+                deviceOverview.RuntimeRoot,
                 CreateDefaultDependencies()),
-            StudioConfigurationSummaryModel.Empty,
-            StudioRuntimeSummaryModel.Empty,
-            StudioLogSummaryModel.Empty);
-    }
-
-    /// <summary>
-    /// 从应用装配结果创建默认接线上下文。
-    /// </summary>
-    public static StudioBootstrapContext CreateBootstrapContext(
-        ApplicationAssembly assembly,
-        IReadOnlyCollection<LogEntry>? logEntries = null)
-    {
-        return StudioApplicationProjection.CreateBootstrapContext(assembly, logEntries);
+            deviceOverview);
     }
 
     /// <summary>
@@ -61,9 +61,7 @@ public static class StudioCompositionRoot
             CreateNavigation(context.NavigationOptions),
             CreateStatusModel(context),
             context.RuntimeDescriptor,
-            context.ConfigurationSummary,
-            context.RuntimeSummary,
-            context.LogSummary);
+            context.DeviceOverview);
 
         var firstItem = shell.Navigation.Sections
             .SelectMany(section => section.Items)
@@ -85,64 +83,115 @@ public static class StudioCompositionRoot
     private static StudioLayoutDescriptor CreateLayoutDescriptor()
     {
         return new StudioLayoutDescriptor(
-            "工程总览区",
-            "工作台导航区",
-            "主工作区",
-            "状态与接线摘要区");
+            "设备工程总览区",
+            "工程树导航区",
+            "模块工作区",
+            "状态与调试摘要区");
     }
 
     private static StudioNavigationViewModel CreateNavigation(StudioNavigationOptions options)
     {
-        var workbenchItems = new List<NavigationItem>();
+        var overviewItems = new List<NavigationItem>
+        {
+            new(
+                StudioRoute.DeviceOverview,
+                "设备总览",
+                "显示整机摘要、模块树和工程工具入口。",
+                "设备总览")
+        };
 
+        var configurationItems = new List<NavigationItem>();
         if (options.IncludeConfigurationEntry)
         {
-            workbenchItems.Add(new NavigationItem(
+            configurationItems.Add(new NavigationItem(
                 StudioRoute.ConfigurationWorkbench,
                 "工程配置",
-                "用于设备工程配置与参数组织入口的只读占位。",
-                "工程工作台"));
+                "用于查看整机、模块与运行实例配置范围。",
+                "工程配置"));
+        }
+
+        if (options.IncludeAlarmEntry)
+        {
+            configurationItems.Add(new NavigationItem(
+                StudioRoute.AlarmConfiguration,
+                "报警配置",
+                "用于管理报警定义、报警映射与模块报警范围的入口占位。",
+                "工程配置"));
+        }
+
+        if (options.IncludeInterlockEntry)
+        {
+            configurationItems.Add(new NavigationItem(
+                StudioRoute.InterlockManagement,
+                "互锁管理",
+                "用于查看跨模块互锁、工艺互锁与调试互锁的入口占位。",
+                "工程配置"));
+        }
+
+        var moduleItems = new List<NavigationItem>();
+        if (options.IncludeModuleWorkbenchEntry)
+        {
+            moduleItems.Add(new NavigationItem(
+                StudioRoute.ModuleWorkbench,
+                "模块工作台",
+                "按模块组织参数、状态、报警、互锁、IO 与调试入口。",
+                "模块工作台"));
+        }
+
+        if (options.IncludeIoMonitorEntry)
+        {
+            moduleItems.Add(new NavigationItem(
+                StudioRoute.IoMonitor,
+                "IO 监控",
+                "用于观察模块 IO 摘要、信号入口与联调位。",
+                "模块工作台"));
+        }
+
+        var diagnosticsItems = new List<NavigationItem>();
+        if (options.IncludeRuntimeDiagnosticsEntry)
+        {
+            diagnosticsItems.Add(new NavigationItem(
+                StudioRoute.RuntimeDiagnostics,
+                "运行诊断",
+                "用于查看宿主、运行实例与模块状态摘要。",
+                "监控与诊断"));
         }
 
         if (options.IncludeLogsEntry)
         {
-            workbenchItems.Add(new NavigationItem(
+            diagnosticsItems.Add(new NavigationItem(
                 StudioRoute.LogsWorkbench,
                 "详细日志",
-                "用于日志检视与故障追踪入口的只读占位。",
-                "工程工作台"));
+                "用于承载整机与模块日志入口、故障追踪入口与联调摘要。",
+                "监控与诊断"));
         }
 
-        if (options.IncludeRuntimeDiagnosticsEntry)
+        var controlItems = new List<NavigationItem>();
+        if (options.IncludeControlConsoleEntry)
         {
-            workbenchItems.Add(new NavigationItem(
-                StudioRoute.RuntimeDiagnostics,
-                "运行诊断",
-                "用于宿主与模块运行摘要的只读入口。",
-                "工程工作台"));
+            controlItems.Add(new NavigationItem(
+                StudioRoute.ControlConsole,
+                "工程控制台",
+                "用于承载模块工程指令、手动测试与控制入口。",
+                "工程控制"));
         }
 
         if (options.IncludeDebugAssistantEntry)
         {
-            workbenchItems.Add(new NavigationItem(
+            controlItems.Add(new NavigationItem(
                 StudioRoute.DebugAssistant,
                 "调试助手",
-                "用于开发与现场调试辅助入口的占位。",
-                "工程工作台"));
-        }
-
-        if (options.IncludeModuleExplorerEntry)
-        {
-            workbenchItems.Add(new NavigationItem(
-                StudioRoute.ModuleExplorer,
-                "模块状态",
-                "用于平台模块摘要与连接状态入口的只读占位。",
-                "工程工作台"));
+                "用于问题定位、联调提示与后续工程工具扩展入口。",
+                "工程控制"));
         }
 
         return new StudioNavigationViewModel(
         [
-            new NavigationSection("工程工作台", workbenchItems)
+            new NavigationSection("设备总览", overviewItems),
+            new NavigationSection("工程配置", configurationItems),
+            new NavigationSection("模块工作台", moduleItems),
+            new NavigationSection("监控与诊断", diagnosticsItems),
+            new NavigationSection("工程控制", controlItems)
         ]);
     }
 
@@ -153,7 +202,7 @@ public static class StudioCompositionRoot
             {
                 new StudioStatusItem("Profile", context.RuntimeDescriptor.CurrentProfile),
                 new StudioStatusItem("RuntimeRoot", context.RuntimeDescriptor.RuntimeRootSummary),
-                new StudioStatusItem("依赖数", context.RuntimeDescriptor.Dependencies.Count.ToString())
+                new StudioStatusItem("模块数", context.DeviceOverview.Modules.Count.ToString())
             },
             context.ShellOptions.StartupMessage);
     }
@@ -162,10 +211,35 @@ public static class StudioCompositionRoot
     {
         return
         [
-            new StudioDependencyDescriptor("FusionKernel", false, "当前仅保留宿主与运行摘要接线位。"),
-            new StudioDependencyDescriptor("FusionConfig", false, "当前仅保留工程配置映射接线位。"),
-            new StudioDependencyDescriptor("FusionLog", false, "当前仅保留详细日志入口接线位。"),
-            new StudioDependencyDescriptor("FusionApp", false, "当前仅保留应用层装配接线位。")
+            new StudioDependencyDescriptor("FusionKernel", false, "当前只消费宿主与运行时摘要边界。"),
+            new StudioDependencyDescriptor("FusionConfig", false, "当前只消费工程配置摘要与 section 映射结果。"),
+            new StudioDependencyDescriptor("FusionLog", false, "当前只消费日志入口摘要，不实现日志平台。"),
+            new StudioDependencyDescriptor("FusionApp", false, "当前由应用层负责后续默认装配。")
+        ];
+    }
+
+    private static IReadOnlyCollection<StudioModuleNodeModel> CreateDefaultModules()
+    {
+        return
+        [
+            new StudioModuleNodeModel(
+                "LP01",
+                "LoadPort-01",
+                "LoadPort",
+                "Idle",
+                ["参数", "IO", "报警", "互锁", "状态", "调试"]),
+            new StudioModuleNodeModel(
+                "TM01",
+                "TransferModule-01",
+                "Robot",
+                "Ready",
+                ["参数", "IO", "报警", "互锁", "状态", "控制"]),
+            new StudioModuleNodeModel(
+                "PM01",
+                "ProcessModule-01",
+                "ProcessModule",
+                "Standby",
+                ["参数", "IO", "报警", "互锁", "状态", "日志"])
         ];
     }
 }

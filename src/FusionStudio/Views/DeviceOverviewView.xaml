@@ -1,0 +1,146 @@
+<UserControl x:Class="FusionStudio.Views.DeviceOverviewView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <TextBlock FontSize="18"
+                       FontWeight="SemiBold"
+                       Foreground="#102A43"
+                       Text="{Binding Overview.EquipmentName}" />
+            <TextBlock Margin="0,8,0,0"
+                       FontSize="13"
+                       Foreground="#486581"
+                       Text="{Binding Overview.Summary}" />
+        </StackPanel>
+
+        <Grid Grid.Row="1"
+              Margin="0,20,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Margin="0,0,10,0"
+                    Padding="14"
+                    Background="#EEF4FA"
+                    CornerRadius="12">
+                <StackPanel>
+                    <TextBlock FontSize="12"
+                               FontWeight="Bold"
+                               Foreground="#334E68"
+                               Text="运行 Profile" />
+                    <TextBlock Margin="0,6,0,0"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="#102A43"
+                               Text="{Binding Overview.RuntimeProfile}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="1"
+                    Margin="10,0"
+                    Padding="14"
+                    Background="#EEF4FA"
+                    CornerRadius="12">
+                <StackPanel>
+                    <TextBlock FontSize="12"
+                               FontWeight="Bold"
+                               Foreground="#334E68"
+                               Text="运行根摘要" />
+                    <TextBlock Margin="0,6,0,0"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="#102A43"
+                               Text="{Binding Overview.RuntimeRoot}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Padding="14"
+                    Background="#EEF4FA"
+                    CornerRadius="12">
+                <StackPanel>
+                    <TextBlock FontSize="12"
+                               FontWeight="Bold"
+                               Foreground="#334E68"
+                               Text="模块数量" />
+                    <TextBlock Margin="0,6,0,0"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="#102A43"
+                               Text="{Binding Overview.Modules.Count}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="2"
+                Padding="18"
+                Background="#F8FAFC"
+                BorderBrush="#D9E2EC"
+                BorderThickness="1"
+                CornerRadius="14">
+            <StackPanel>
+                <TextBlock FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="#102A43"
+                           Text="模块总览" />
+                <TextBlock Margin="0,6,0,14"
+                           FontSize="12"
+                           Foreground="#627D98"
+                           Text="首页优先呈现设备全局状态和模块分布，便于快速定位工程入口。" />
+
+                <ItemsControl ItemsSource="{Binding Overview.Modules}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="0,0,0,10"
+                                    Padding="14"
+                                    Background="White"
+                                    CornerRadius="12">
+                                <StackPanel>
+                                    <TextBlock FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="#102A43"
+                                               Text="{Binding ModuleName}" />
+                                    <TextBlock Margin="0,4,0,0"
+                                               FontSize="12"
+                                               Foreground="#486581">
+                                        <Run Text="{Binding ModuleType}" />
+                                        <Run Text=" / " />
+                                        <Run Text="{Binding ModuleState}" />
+                                    </TextBlock>
+                                    <ItemsControl Margin="0,8,0,0"
+                                                  ItemsSource="{Binding ToolEntries}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="0,0,8,8"
+                                                        Padding="8,2"
+                                                        Background="#E6EEF7"
+                                                        CornerRadius="10">
+                                                    <TextBlock Foreground="#334E68"
+                                                               Text="{Binding}" />
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

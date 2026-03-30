@@ -1,0 +1,35 @@
+<UserControl x:Class="FusionStudio.Views.InterlockManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <TextBlock FontSize="18"
+                   FontWeight="SemiBold"
+                   Text="{Binding Title}" />
+        <TextBlock Margin="0,10,0,0"
+                   FontSize="13"
+                   Text="{Binding Description}" />
+        <ItemsControl Margin="0,18,0,0"
+                      ItemsSource="{Binding Modules}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="0,0,0,10"
+                            Padding="12"
+                            Background="#F8FAFC"
+                            CornerRadius="12">
+                        <TextBlock>
+                            <Run FontWeight="SemiBold" Text="{Binding ModuleName}" />
+                            <Run Text="：互锁入口占位" />
+                        </TextBlock>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Border Margin="0,18,0,0"
+                Padding="14"
+                Background="#FFF6E0"
+                CornerRadius="12">
+            <TextBlock Foreground="#7C5E10"
+                       Text="{Binding Hint}" />
+        </Border>
+    </StackPanel>
+</UserControl>
