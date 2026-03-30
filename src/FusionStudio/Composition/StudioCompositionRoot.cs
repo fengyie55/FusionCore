@@ -22,7 +22,7 @@ public static class StudioCompositionRoot
             new StudioShellOptions(
                 "FusionStudio",
                 "平台工程工作台",
-                "当前仅提供工程配置、日志、运行诊断与调试入口占位。"),
+                "当前仅提供工程配置、详细日志、运行诊断与调试入口的只读骨架。"),
             new StudioNavigationOptions(
                 true,
                 true,
@@ -65,7 +65,9 @@ public static class StudioCompositionRoot
             context.RuntimeSummary,
             context.LogSummary);
 
-        var firstItem = shell.Navigation.Sections.SelectMany(section => section.Items).First();
+        var firstItem = shell.Navigation.Sections
+            .SelectMany(section => section.Items)
+            .First();
         shell.NavigateTo(firstItem);
         return shell;
     }
@@ -98,7 +100,7 @@ public static class StudioCompositionRoot
             workbenchItems.Add(new NavigationItem(
                 StudioRoute.ConfigurationWorkbench,
                 "工程配置",
-                "用于设备工程配置与参数组织的入口占位。",
+                "用于设备工程配置与参数组织入口的只读占位。",
                 "工程工作台"));
         }
 
@@ -107,7 +109,7 @@ public static class StudioCompositionRoot
             workbenchItems.Add(new NavigationItem(
                 StudioRoute.LogsWorkbench,
                 "详细日志",
-                "用于日志检视与故障追踪入口的占位。",
+                "用于日志检视与故障追踪入口的只读占位。",
                 "工程工作台"));
         }
 
@@ -134,7 +136,7 @@ public static class StudioCompositionRoot
             workbenchItems.Add(new NavigationItem(
                 StudioRoute.ModuleExplorer,
                 "模块状态",
-                "用于平台模块摘要与连接状态入口的占位。",
+                "用于平台模块摘要与连接状态入口的只读占位。",
                 "工程工作台"));
         }
 
