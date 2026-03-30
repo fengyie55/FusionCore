@@ -61,7 +61,12 @@ public sealed class StudioShellViewModel : ObservableObject
     public StudioDeviceOverviewModel DeviceOverview { get; }
 
     /// <summary>
-    /// 获取模块树节点集合。
+    /// 获取工程树只读模型。
+    /// </summary>
+    public StudioEngineeringTreeModel EngineeringTree { get; }
+
+    /// <summary>
+    /// 获取模块节点集合。
     /// </summary>
     public IReadOnlyCollection<StudioModuleNodeModel> Modules => DeviceOverview.Modules;
 
@@ -104,7 +109,8 @@ public sealed class StudioShellViewModel : ObservableObject
         StudioConfigurationSummaryModel configurationSummary,
         StudioRuntimeSummaryModel runtimeSummary,
         StudioLogSummaryModel logSummary,
-        StudioDeviceOverviewModel deviceOverview)
+        StudioDeviceOverviewModel deviceOverview,
+        StudioEngineeringTreeModel engineeringTree)
     {
         ApplicationTitle = shellOptions.ApplicationTitle;
         ShellSubtitle = shellOptions.ShellSubtitle;
@@ -115,6 +121,7 @@ public sealed class StudioShellViewModel : ObservableObject
         RuntimeSummary = runtimeSummary;
         LogSummary = logSummary;
         DeviceOverview = deviceOverview;
+        EngineeringTree = engineeringTree;
         _status = status;
         _currentViewTitle = shellOptions.ApplicationTitle;
     }
@@ -132,7 +139,7 @@ public sealed class StudioShellViewModel : ObservableObject
             StudioRoute.ConfigurationWorkbench => new ConfigurationWorkbenchViewModel(DeviceOverview, ConfigurationSummary),
             StudioRoute.AlarmConfiguration => new AlarmConfigurationViewModel(Modules),
             StudioRoute.InterlockManagement => new InterlockManagementViewModel(Modules),
-            StudioRoute.ModuleWorkbench => new ModuleWorkbenchViewModel(Modules),
+            StudioRoute.ModuleWorkbench => new ModuleWorkbenchViewModel(Modules, EngineeringTree),
             StudioRoute.IoMonitor => new IoMonitorViewModel(Modules),
             StudioRoute.RuntimeDiagnostics => new RuntimeDiagnosticsViewModel(DeviceOverview, RuntimeSummary),
             StudioRoute.LogsWorkbench => new LogsWorkbenchViewModel(Modules, LogSummary),

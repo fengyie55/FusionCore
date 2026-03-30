@@ -8,4 +8,5 @@ public sealed record StudioDeviceOverviewModel(
     string Summary,
     string RuntimeProfile,
     string RuntimeRoot,
-    IReadOnlyCollection<StudioModuleNodeModel> Modules);
+    IReadOnlyCollection<StudioModuleNodeModel> Modules,
+    StudioEngineeringTreeModel EngineeringTree);

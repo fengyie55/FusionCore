@@ -29,6 +29,24 @@ public sealed class StudioShellSkeletonTests
         Assert.True(context.NavigationOptions.IncludeAlarmEntry);
         Assert.True(context.NavigationOptions.IncludeModuleWorkbenchEntry);
         Assert.NotEmpty(context.DeviceOverview.Modules);
+        Assert.Single(context.EngineeringTree.RootNodes);
+    }
+
+    [Fact]
+    public void Engineering_Tree_Contains_Device_Module_And_Tool_Nodes()
+    {
+        var context = StudioCompositionRoot.CreateBootstrapContext();
+
+        var deviceNode = Assert.Single(context.EngineeringTree.RootNodes);
+        Assert.Equal(StudioEngineeringNodeKind.Device, deviceNode.Kind);
+        Assert.NotEmpty(deviceNode.Children);
+
+        var moduleNode = deviceNode.Children.First();
+        Assert.Equal(StudioEngineeringNodeKind.Module, moduleNode.Kind);
+        Assert.True(moduleNode.Children.Count >= 6);
+        Assert.Contains(moduleNode.Children, item => item.Kind == StudioEngineeringNodeKind.Io);
+        Assert.Contains(moduleNode.Children, item => item.Kind == StudioEngineeringNodeKind.Alarms);
+        Assert.Contains(moduleNode.Children, item => item.Kind == StudioEngineeringNodeKind.Debug);
     }
 
     [Fact]
@@ -40,6 +58,7 @@ public sealed class StudioShellSkeletonTests
         Assert.NotNull(shell.Navigation);
         Assert.NotNull(shell.Status);
         Assert.IsType<DeviceOverviewViewModel>(shell.CurrentViewModel);
+        Assert.Single(shell.EngineeringTree.RootNodes);
     }
 
     [Fact]
@@ -66,8 +85,9 @@ public sealed class StudioShellSkeletonTests
 
         shell.NavigateTo(item);
 
+        var viewModel = Assert.IsType<ModuleWorkbenchViewModel>(shell.CurrentViewModel);
+        Assert.NotEmpty(viewModel.EngineeringNodes);
         Assert.Equal("模块工作台", shell.CurrentViewTitle);
-        Assert.IsType<ModuleWorkbenchViewModel>(shell.CurrentViewModel);
     }
 
     [Fact]
@@ -84,6 +104,7 @@ public sealed class StudioShellSkeletonTests
         Assert.True(context.ConfigurationSummary.IsConfigurationAvailable);
         Assert.Equal("DeviceOverview", assembly.StudioBootstrapDescriptor.StartRoute);
         Assert.Single(context.LogSummary.Entries);
+        Assert.Single(context.EngineeringTree.RootNodes);
     }
 
     [Fact]
@@ -100,6 +121,7 @@ public sealed class StudioShellSkeletonTests
         Assert.Equal(@"D:\FusionRuntime\config", shell.ConfigurationSummary.ConfigRoot);
         Assert.Single(shell.LogSummary.Entries);
         Assert.IsType<DeviceOverviewViewModel>(shell.CurrentViewModel);
+        Assert.Single(shell.EngineeringTree.RootNodes);
     }
 
     [Fact]
