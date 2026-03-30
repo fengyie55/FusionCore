@@ -8,4 +8,5 @@ public sealed record StudioModuleNodeModel(
     string ModuleName,
     string ModuleType,
     string ModuleState,
-    IReadOnlyCollection<string> ToolEntries);
+    string Summary,
+    IReadOnlyCollection<StudioModuleToolEntryModel> ToolEntries);

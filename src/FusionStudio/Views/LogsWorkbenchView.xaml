@@ -21,6 +21,7 @@
                            Text="{Binding Summary.SummaryText}" />
             </StackPanel>
         </Border>
+
         <ItemsControl Margin="0,16,0,0"
                       ItemsSource="{Binding Summary.Entries}">
             <ItemsControl.ItemTemplate>

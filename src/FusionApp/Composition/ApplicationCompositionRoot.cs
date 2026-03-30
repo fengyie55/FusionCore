@@ -133,14 +133,19 @@ public static class ApplicationCompositionRoot
 
         return new ApplicationStudioBootstrapDescriptor(
             "FusionStudio",
-            "ConfigurationWorkbench",
+            "DeviceOverview",
             "准备进入平台工程工作台",
             [
+                "DeviceOverview",
                 "ConfigurationWorkbench",
+                "AlarmConfiguration",
+                "InterlockManagement",
+                "ModuleWorkbench",
+                "IoMonitor",
                 "LogsWorkbench",
                 "RuntimeDiagnostics",
-                "DebugAssistant",
-                "ModuleExplorer"
+                "ControlConsole",
+                "DebugAssistant"
             ],
             runtimeDescriptor);
     }

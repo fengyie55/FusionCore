@@ -1,4 +1,3 @@
-using FusionStudio.Composition;
 using FusionStudio.Models;
 
 namespace FusionStudio.ViewModels;
@@ -14,19 +13,19 @@ public sealed class RuntimeDiagnosticsViewModel : PlaceholderViewModelBase
     public StudioDeviceOverviewModel Overview { get; }
 
     /// <summary>
-    /// 获取运行时摘要。
+    /// 获取运行态摘要。
     /// </summary>
-    public StudioRuntimeDescriptor RuntimeDescriptor { get; }
+    public StudioRuntimeSummaryModel Summary { get; }
 
     public RuntimeDiagnosticsViewModel(
         StudioDeviceOverviewModel overview,
-        StudioRuntimeDescriptor runtimeDescriptor)
+        StudioRuntimeSummaryModel summary)
         : base(
             "运行诊断",
             "用于查看宿主、运行实例与模块状态摘要的只读工程入口。",
             "当前阶段只承载诊断摘要，不实现健康检查平台与自动恢复机制。")
     {
         Overview = overview;
-        RuntimeDescriptor = runtimeDescriptor;
+        Summary = summary;
     }
 }

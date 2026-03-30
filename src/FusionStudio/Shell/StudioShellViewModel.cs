@@ -41,6 +41,21 @@ public sealed class StudioShellViewModel : ObservableObject
     public StudioRuntimeDescriptor RuntimeDescriptor { get; }
 
     /// <summary>
+    /// 获取工程配置摘要。
+    /// </summary>
+    public StudioConfigurationSummaryModel ConfigurationSummary { get; }
+
+    /// <summary>
+    /// 获取运行态摘要。
+    /// </summary>
+    public StudioRuntimeSummaryModel RuntimeSummary { get; }
+
+    /// <summary>
+    /// 获取日志摘要。
+    /// </summary>
+    public StudioLogSummaryModel LogSummary { get; }
+
+    /// <summary>
     /// 获取设备总览摘要。
     /// </summary>
     public StudioDeviceOverviewModel DeviceOverview { get; }
@@ -86,6 +101,9 @@ public sealed class StudioShellViewModel : ObservableObject
         StudioNavigationViewModel navigation,
         StudioStatusModel status,
         StudioRuntimeDescriptor runtimeDescriptor,
+        StudioConfigurationSummaryModel configurationSummary,
+        StudioRuntimeSummaryModel runtimeSummary,
+        StudioLogSummaryModel logSummary,
         StudioDeviceOverviewModel deviceOverview)
     {
         ApplicationTitle = shellOptions.ApplicationTitle;
@@ -93,6 +111,9 @@ public sealed class StudioShellViewModel : ObservableObject
         Layout = layout;
         Navigation = navigation;
         RuntimeDescriptor = runtimeDescriptor;
+        ConfigurationSummary = configurationSummary;
+        RuntimeSummary = runtimeSummary;
+        LogSummary = logSummary;
         DeviceOverview = deviceOverview;
         _status = status;
         _currentViewTitle = shellOptions.ApplicationTitle;
@@ -108,13 +129,13 @@ public sealed class StudioShellViewModel : ObservableObject
         CurrentViewModel = item.Route switch
         {
             StudioRoute.DeviceOverview => new DeviceOverviewViewModel(DeviceOverview),
-            StudioRoute.ConfigurationWorkbench => new ConfigurationWorkbenchViewModel(DeviceOverview),
+            StudioRoute.ConfigurationWorkbench => new ConfigurationWorkbenchViewModel(DeviceOverview, ConfigurationSummary),
             StudioRoute.AlarmConfiguration => new AlarmConfigurationViewModel(Modules),
             StudioRoute.InterlockManagement => new InterlockManagementViewModel(Modules),
             StudioRoute.ModuleWorkbench => new ModuleWorkbenchViewModel(Modules),
             StudioRoute.IoMonitor => new IoMonitorViewModel(Modules),
-            StudioRoute.RuntimeDiagnostics => new RuntimeDiagnosticsViewModel(DeviceOverview, RuntimeDescriptor),
-            StudioRoute.LogsWorkbench => new LogsWorkbenchViewModel(Modules),
+            StudioRoute.RuntimeDiagnostics => new RuntimeDiagnosticsViewModel(DeviceOverview, RuntimeSummary),
+            StudioRoute.LogsWorkbench => new LogsWorkbenchViewModel(Modules, LogSummary),
             StudioRoute.ControlConsole => new ControlConsoleViewModel(Modules),
             StudioRoute.DebugAssistant => new DebugAssistantViewModel(),
             _ => new DeviceOverviewViewModel(DeviceOverview)
@@ -124,8 +145,8 @@ public sealed class StudioShellViewModel : ObservableObject
             new[]
             {
                 new StudioStatusItem("页面", item.Title),
-                new StudioStatusItem("Profile", RuntimeDescriptor.CurrentProfile),
-                new StudioStatusItem("RuntimeRoot", RuntimeDescriptor.RuntimeRootSummary),
+                new StudioStatusItem("Profile", RuntimeSummary.Profile),
+                new StudioStatusItem("RuntimeRoot", RuntimeSummary.RuntimeRoot),
                 new StudioStatusItem("模块数", Modules.Count.ToString())
             },
             item.Description);
