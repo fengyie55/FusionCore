@@ -12,6 +12,7 @@ using FusionLog.Levels;
 using FusionStudio.Composition;
 using FusionStudio.Models;
 using FusionStudio.Navigation;
+using FusionStudio.Projections;
 using FusionStudio.ViewModels;
 
 namespace FusionStudio.Tests;
@@ -81,7 +82,7 @@ public sealed class StudioShellSkeletonTests
         Assert.Equal("Development", context.RuntimeSummary.Profile);
         Assert.Equal(@"D:\FusionRuntime", context.RuntimeSummary.RuntimeRoot);
         Assert.True(context.ConfigurationSummary.IsConfigurationAvailable);
-        Assert.Equal("ConfigurationWorkbench", assembly.StudioBootstrapDescriptor.StartRoute);
+        Assert.Equal("DeviceOverview", assembly.StudioBootstrapDescriptor.StartRoute);
         Assert.Single(context.LogSummary.Entries);
     }
 
@@ -98,7 +99,7 @@ public sealed class StudioShellSkeletonTests
         Assert.Equal("Development", shell.RuntimeSummary.Profile);
         Assert.Equal(@"D:\FusionRuntime\config", shell.ConfigurationSummary.ConfigRoot);
         Assert.Single(shell.LogSummary.Entries);
-        Assert.IsType<ConfigurationWorkbenchViewModel>(shell.CurrentViewModel);
+        Assert.IsType<DeviceOverviewViewModel>(shell.CurrentViewModel);
     }
 
     [Fact]

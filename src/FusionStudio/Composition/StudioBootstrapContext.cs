@@ -9,4 +9,7 @@ public sealed record StudioBootstrapContext(
     StudioShellOptions ShellOptions,
     StudioNavigationOptions NavigationOptions,
     StudioRuntimeDescriptor RuntimeDescriptor,
+    StudioConfigurationSummaryModel ConfigurationSummary,
+    StudioRuntimeSummaryModel RuntimeSummary,
+    StudioLogSummaryModel LogSummary,
     StudioDeviceOverviewModel DeviceOverview);

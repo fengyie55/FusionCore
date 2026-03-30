@@ -12,12 +12,20 @@ public sealed class ConfigurationWorkbenchViewModel : PlaceholderViewModelBase
     /// </summary>
     public StudioDeviceOverviewModel Overview { get; }
 
-    public ConfigurationWorkbenchViewModel(StudioDeviceOverviewModel overview)
+    /// <summary>
+    /// 获取工程配置摘要。
+    /// </summary>
+    public StudioConfigurationSummaryModel Summary { get; }
+
+    public ConfigurationWorkbenchViewModel(
+        StudioDeviceOverviewModel overview,
+        StudioConfigurationSummaryModel summary)
         : base(
             "工程配置",
             "用于组织整机、模块与运行实例配置入口的工程工作页。",
             "当前阶段只展示整机与模块配置范围，不实现真实配置编辑器。")
     {
         Overview = overview;
+        Summary = summary;
     }
 }

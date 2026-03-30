@@ -131,10 +131,11 @@ public sealed class ApplicationCompositionRootTests
         var studioDescriptor = ApplicationCompositionRoot.CreateStudioBootstrapDescriptor(context);
 
         Assert.Equal("FusionStudio", studioDescriptor.DisplayTitle);
-        Assert.Equal("ConfigurationWorkbench", studioDescriptor.StartRoute);
+        Assert.Equal("DeviceOverview", studioDescriptor.StartRoute);
         Assert.Equal("准备进入平台工程工作台", studioDescriptor.StartupMessage);
         Assert.Equal(context.Options.ApplicationId, studioDescriptor.RuntimeDescriptor.ApplicationId);
         Assert.Contains("LogsWorkbench", studioDescriptor.ReadOnlyEntryPoints);
+        Assert.Contains("DeviceOverview", studioDescriptor.ReadOnlyEntryPoints);
     }
 
     [Fact]
@@ -168,7 +169,7 @@ public sealed class ApplicationCompositionRootTests
         Assert.Equal("FusionCore Application", assembly.UiBootstrapDescriptor.DisplayTitle);
         Assert.Equal("Overview", assembly.UiBootstrapDescriptor.StartRoute);
         Assert.Equal("FusionStudio", assembly.StudioBootstrapDescriptor.DisplayTitle);
-        Assert.Equal("ConfigurationWorkbench", assembly.StudioBootstrapDescriptor.StartRoute);
+        Assert.Equal("DeviceOverview", assembly.StudioBootstrapDescriptor.StartRoute);
         Assert.Single(assembly.UiBootstrapDescriptor.RuntimeDescriptor.ModuleNames);
         Assert.Single(assembly.StudioBootstrapDescriptor.RuntimeDescriptor.ModuleNames);
         Assert.Equal("FusionApp", assembly.RuntimeDescriptor.ApplicationId);

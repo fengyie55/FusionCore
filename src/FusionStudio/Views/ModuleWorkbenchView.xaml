@@ -26,23 +26,29 @@
                                 <Run Text=" / " />
                                 <Run Text="{Binding ModuleState}" />
                             </TextBlock>
+                            <TextBlock Margin="0,6,0,0"
+                                       FontSize="12"
+                                       Foreground="#627D98"
+                                       Text="{Binding Summary}" />
                             <ItemsControl Margin="0,8,0,0"
                                           ItemsSource="{Binding ToolEntries}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapPanel />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Margin="0,0,8,8"
-                                                Padding="8,2"
+                                        <Border Margin="0,0,0,8"
+                                                Padding="10,8"
                                                 Background="White"
                                                 BorderBrush="#D9E2EC"
                                                 BorderThickness="1"
                                                 CornerRadius="10">
-                                            <TextBlock Foreground="#334E68"
-                                                       Text="{Binding}" />
+                                            <StackPanel>
+                                                <TextBlock Foreground="#243B53"
+                                                           FontWeight="SemiBold"
+                                                           Text="{Binding Title}" />
+                                                <TextBlock Margin="0,4,0,0"
+                                                           FontSize="12"
+                                                           Foreground="#486581"
+                                                           Text="{Binding Summary}" />
+                                            </StackPanel>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>

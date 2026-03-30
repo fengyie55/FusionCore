@@ -16,6 +16,7 @@
             <TextBlock Foreground="#1F6F5C"
                        Text="{Binding Hint}" />
         </Border>
+
         <Border Margin="0,16,0,0"
                 Padding="16"
                 Background="#F8FAFC"
