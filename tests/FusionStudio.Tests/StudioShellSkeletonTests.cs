@@ -13,6 +13,7 @@ using FusionStudio.Composition;
 using FusionStudio.Models;
 using FusionStudio.Navigation;
 using FusionStudio.Projections;
+using FusionStudio.Shell;
 using FusionStudio.ViewModels;
 
 namespace FusionStudio.Tests;
@@ -30,6 +31,7 @@ public sealed class StudioShellSkeletonTests
         Assert.True(context.NavigationOptions.IncludeModuleWorkbenchEntry);
         Assert.NotEmpty(context.DeviceOverview.Modules);
         Assert.Single(context.EngineeringTree.RootNodes);
+        Assert.NotEmpty(context.ModuleContexts);
     }
 
     [Fact]
@@ -62,17 +64,27 @@ public sealed class StudioShellSkeletonTests
     }
 
     [Fact]
-    public void Navigation_Can_Switch_To_Control_Console()
+    public void Tool_Pages_Should_Receive_Unified_Context()
     {
         var shell = StudioCompositionRoot.CreateShell();
-        var item = shell.Navigation.Sections
-            .SelectMany(section => section.Items)
-            .Single(entry => entry.Route == StudioRoute.ControlConsole);
 
-        shell.NavigateTo(item);
+        var alarmContext = NavigateAndGetToolContext<AlarmConfigurationViewModel>(shell, StudioRoute.AlarmConfiguration);
+        var interlockContext = NavigateAndGetToolContext<InterlockManagementViewModel>(shell, StudioRoute.InterlockManagement);
+        var ioContext = NavigateAndGetToolContext<IoMonitorViewModel>(shell, StudioRoute.IoMonitor);
+        var controlContext = NavigateAndGetToolContext<ControlConsoleViewModel>(shell, StudioRoute.ControlConsole);
 
-        Assert.Equal("工程控制台", shell.CurrentViewTitle);
-        Assert.IsType<ControlConsoleViewModel>(shell.CurrentViewModel);
+        Assert.Equal(alarmContext.EquipmentName, interlockContext.EquipmentName);
+        Assert.Equal(alarmContext.EquipmentName, ioContext.EquipmentName);
+        Assert.Equal(alarmContext.EquipmentName, controlContext.EquipmentName);
+
+        Assert.Equal(alarmContext.ModuleContext.ModuleId, interlockContext.ModuleContext.ModuleId);
+        Assert.Equal(alarmContext.ModuleContext.ModuleId, ioContext.ModuleContext.ModuleId);
+        Assert.Equal(alarmContext.ModuleContext.ModuleId, controlContext.ModuleContext.ModuleId);
+
+        Assert.False(string.IsNullOrWhiteSpace(alarmContext.ModuleContext.ModuleName));
+        Assert.False(string.IsNullOrWhiteSpace(alarmContext.ModuleContext.ModuleType));
+        Assert.False(string.IsNullOrWhiteSpace(alarmContext.ModuleContext.ModuleState));
+        Assert.False(string.IsNullOrWhiteSpace(alarmContext.EquipmentName));
     }
 
     [Fact]
@@ -105,6 +117,7 @@ public sealed class StudioShellSkeletonTests
         Assert.Equal("DeviceOverview", assembly.StudioBootstrapDescriptor.StartRoute);
         Assert.Single(context.LogSummary.Entries);
         Assert.Single(context.EngineeringTree.RootNodes);
+        Assert.NotEmpty(context.ModuleContexts);
     }
 
     [Fact]
@@ -122,6 +135,7 @@ public sealed class StudioShellSkeletonTests
         Assert.Single(shell.LogSummary.Entries);
         Assert.IsType<DeviceOverviewViewModel>(shell.CurrentViewModel);
         Assert.Single(shell.EngineeringTree.RootNodes);
+        Assert.NotEmpty(shell.ModuleContexts);
     }
 
     [Fact]
@@ -132,6 +146,27 @@ public sealed class StudioShellSkeletonTests
         Assert.Single(summary.Entries);
         Assert.Contains("1", summary.SummaryText);
         Assert.Equal("FusionKernel.PlatformModule", summary.Entries.Single().Source);
+    }
+
+    private static StudioToolPageContextModel NavigateAndGetToolContext<TViewModel>(
+        StudioShellViewModel shell,
+        StudioRoute route)
+        where TViewModel : class
+    {
+        var item = shell.Navigation.Sections
+            .SelectMany(section => section.Items)
+            .Single(entry => entry.Route == route);
+
+        shell.NavigateTo(item);
+
+        return shell.CurrentViewModel switch
+        {
+            AlarmConfigurationViewModel alarm when typeof(TViewModel) == typeof(AlarmConfigurationViewModel) => alarm.Context,
+            InterlockManagementViewModel interlock when typeof(TViewModel) == typeof(InterlockManagementViewModel) => interlock.Context,
+            IoMonitorViewModel io when typeof(TViewModel) == typeof(IoMonitorViewModel) => io.Context,
+            ControlConsoleViewModel control when typeof(TViewModel) == typeof(ControlConsoleViewModel) => control.Context,
+            _ => throw new InvalidOperationException("当前路由未返回预期的工具页视图模型。")
+        };
     }
 
     private static ApplicationAssembly CreateApplicationAssembly()

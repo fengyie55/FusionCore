@@ -8,6 +8,44 @@
         <TextBlock Margin="0,10,0,0"
                    FontSize="13"
                    Text="{Binding Description}" />
+
+        <Border Margin="0,16,0,0"
+                Padding="14"
+                Background="#EEF4FA"
+                CornerRadius="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold"
+                               Foreground="#334E68"
+                               Text="上下文头部" />
+                    <TextBlock Margin="0,8,0,0"
+                               Foreground="#102A43"
+                               Text="{Binding Context.EquipmentName}" />
+                    <TextBlock Margin="0,4,0,0"
+                               Foreground="#486581">
+                        <Run Text="{Binding Context.ModuleContext.ModuleName}" />
+                        <Run Text=" / " />
+                        <Run Text="{Binding Context.ModuleContext.ModuleType}" />
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                    <TextBlock FontWeight="SemiBold"
+                               Foreground="#334E68"
+                               Text="当前工具域" />
+                    <TextBlock Margin="0,8,0,0"
+                               Foreground="#102A43"
+                               Text="{Binding Context.ToolDomain}" />
+                    <TextBlock Margin="0,4,0,0"
+                               Foreground="#486581"
+                               Text="{Binding Context.ModuleContext.ModuleState}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
         <ItemsControl Margin="0,18,0,0"
                       ItemsSource="{Binding Modules}">
             <ItemsControl.ItemTemplate>
@@ -24,6 +62,7 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+
         <Border Margin="0,18,0,0"
                 Padding="14"
                 Background="#FFF6E0"
