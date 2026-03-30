@@ -13,4 +13,5 @@ public sealed record StudioBootstrapContext(
     StudioRuntimeSummaryModel RuntimeSummary,
     StudioLogSummaryModel LogSummary,
     StudioDeviceOverviewModel DeviceOverview,
-    StudioEngineeringTreeModel EngineeringTree);
+    StudioEngineeringTreeModel EngineeringTree,
+    IReadOnlyCollection<StudioModuleContextModel> ModuleContexts);

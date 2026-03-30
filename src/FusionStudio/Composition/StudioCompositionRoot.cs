@@ -39,6 +39,10 @@ public static class StudioCompositionRoot
             "FusionCore Demo Equipment",
             runtimeSummary,
             configurationSummary);
+        var moduleContexts = CreateModuleContexts(
+            runtimeSummary.Profile,
+            runtimeSummary.RuntimeRoot,
+            deviceOverview.Modules);
 
         return new StudioBootstrapContext(
             new StudioShellOptions(
@@ -55,7 +59,8 @@ public static class StudioCompositionRoot
             runtimeSummary,
             logSummary,
             deviceOverview,
-            deviceOverview.EngineeringTree);
+            deviceOverview.EngineeringTree,
+            moduleContexts);
     }
 
     /// <summary>
@@ -74,6 +79,10 @@ public static class StudioCompositionRoot
             assembly.RuntimeDescriptor.DisplayTitle,
             runtimeSummary,
             configurationSummary);
+        var moduleContexts = CreateModuleContexts(
+            runtimeSummary.Profile,
+            runtimeSummary.RuntimeRoot,
+            deviceOverview.Modules);
 
         return new StudioBootstrapContext(
             new StudioShellOptions(
@@ -90,7 +99,8 @@ public static class StudioCompositionRoot
             runtimeSummary,
             logSummary,
             deviceOverview,
-            deviceOverview.EngineeringTree);
+            deviceOverview.EngineeringTree,
+            moduleContexts);
     }
 
     /// <summary>
@@ -109,7 +119,8 @@ public static class StudioCompositionRoot
             context.RuntimeSummary,
             context.LogSummary,
             context.DeviceOverview,
-            context.EngineeringTree);
+            context.EngineeringTree,
+            context.ModuleContexts);
 
         var firstRoute = StudioRoute.DeviceOverview;
         var firstItem = shell.Navigation.Sections
@@ -301,6 +312,24 @@ public static class StudioCompositionRoot
                 module.State,
                 "参数、IO、报警、互锁、状态与调试入口按模块聚合。",
                 CreateDefaultToolEntries(module.ModuleName)))
+            .ToArray();
+    }
+
+    private static IReadOnlyCollection<StudioModuleContextModel> CreateModuleContexts(
+        string runtimeProfile,
+        string runtimeRoot,
+        IReadOnlyCollection<StudioModuleNodeModel> modules)
+    {
+        return modules
+            .OrderBy(module => module.ModuleId, StringComparer.OrdinalIgnoreCase)
+            .Select(module => new StudioModuleContextModel(
+                module.ModuleId,
+                module.ModuleName,
+                module.ModuleType,
+                module.ModuleState,
+                runtimeProfile,
+                runtimeRoot,
+                "由设备总览模块节点与运行摘要派生。"))
             .ToArray();
     }
 
