@@ -5,6 +5,37 @@
         <StackPanel>
             <TextBlock FontSize="22" FontWeight="SemiBold" Text="{Binding Title}" />
             <TextBlock Margin="0,12,0,0" FontSize="14" Text="{Binding Description}" />
+            <ItemsControl Margin="0,18,0,0"
+                          ItemsSource="{Binding Modules}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="0,0,0,8"
+                                Padding="12"
+                                Background="#F8FAFC"
+                                BorderBrush="#D9E2EC"
+                                BorderThickness="1"
+                                CornerRadius="12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="150" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock FontWeight="SemiBold"
+                                           Foreground="#102A43"
+                                           Text="{Binding ModuleName}" />
+                                <TextBlock Grid.Column="1"
+                                           Foreground="#486581"
+                                           Text="{Binding ModuleId}" />
+                                <TextBlock Grid.Column="2"
+                                           HorizontalAlignment="Right"
+                                           Foreground="#334E68"
+                                           Text="{Binding State}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </StackPanel>
     </Border>
 </UserControl>

@@ -1,6 +1,9 @@
+using FusionApp.Composition;
+using FusionLog.Entries;
 using FusionStudio.Layout;
 using FusionStudio.Models;
 using FusionStudio.Navigation;
+using FusionStudio.Projections;
 using FusionStudio.Shell;
 
 namespace FusionStudio.Composition;
@@ -60,9 +63,21 @@ public static class StudioCompositionRoot
             context.RuntimeDescriptor,
             context.DeviceOverview);
 
-        var firstItem = shell.Navigation.Sections.SelectMany(section => section.Items).First();
+        var firstItem = shell.Navigation.Sections
+            .SelectMany(section => section.Items)
+            .First();
         shell.NavigateTo(firstItem);
         return shell;
+    }
+
+    /// <summary>
+    /// 从应用装配结果创建工作台壳层。
+    /// </summary>
+    public static StudioShellViewModel CreateShell(
+        ApplicationAssembly assembly,
+        IReadOnlyCollection<LogEntry>? logEntries = null)
+    {
+        return CreateShell(CreateBootstrapContext(assembly, logEntries));
     }
 
     private static StudioLayoutDescriptor CreateLayoutDescriptor()

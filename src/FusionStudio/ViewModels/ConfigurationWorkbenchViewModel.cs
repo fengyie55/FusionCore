@@ -3,7 +3,7 @@ using FusionStudio.Models;
 namespace FusionStudio.ViewModels;
 
 /// <summary>
-/// 表示工程配置工作台的占位视图模型。
+/// 表示工程配置工作台的只读视图模型。
 /// </summary>
 public sealed class ConfigurationWorkbenchViewModel : PlaceholderViewModelBase
 {

@@ -120,6 +120,24 @@ public sealed class ApplicationCompositionRootTests
     }
 
     [Fact]
+    public void CreateStudioBootstrapDescriptor_Carries_Runtime_And_Workbench_Summaries()
+    {
+        var context = ApplicationCompositionRoot.CreateBootstrapContext(
+            modules:
+            [
+                new PlatformModule()
+            ]);
+
+        var studioDescriptor = ApplicationCompositionRoot.CreateStudioBootstrapDescriptor(context);
+
+        Assert.Equal("FusionStudio", studioDescriptor.DisplayTitle);
+        Assert.Equal("ConfigurationWorkbench", studioDescriptor.StartRoute);
+        Assert.Equal("准备进入平台工程工作台", studioDescriptor.StartupMessage);
+        Assert.Equal(context.Options.ApplicationId, studioDescriptor.RuntimeDescriptor.ApplicationId);
+        Assert.Contains("LogsWorkbench", studioDescriptor.ReadOnlyEntryPoints);
+    }
+
+    [Fact]
     public void CreateAssembly_Binds_Config_Log_Host_And_Ui_Bootstrap_Descriptor()
     {
         var runtimeRoot = RuntimeRootOptions.CreateDefault(@"D:\FusionCore");
@@ -149,7 +167,10 @@ public sealed class ApplicationCompositionRootTests
         Assert.Equal(boundary.ConfigurationProvider, assembly.Boundary.ConfigurationProvider);
         Assert.Equal("FusionCore Application", assembly.UiBootstrapDescriptor.DisplayTitle);
         Assert.Equal("Overview", assembly.UiBootstrapDescriptor.StartRoute);
+        Assert.Equal("FusionStudio", assembly.StudioBootstrapDescriptor.DisplayTitle);
+        Assert.Equal("ConfigurationWorkbench", assembly.StudioBootstrapDescriptor.StartRoute);
         Assert.Single(assembly.UiBootstrapDescriptor.RuntimeDescriptor.ModuleNames);
+        Assert.Single(assembly.StudioBootstrapDescriptor.RuntimeDescriptor.ModuleNames);
         Assert.Equal("FusionApp", assembly.RuntimeDescriptor.ApplicationId);
         Assert.Equal(HostState.Constructed, assembly.Runtime.Host.State);
     }
