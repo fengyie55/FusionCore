@@ -41,7 +41,7 @@ flowchart LR
     KERNEL --> EQUIP[FusionEquipment.Abstractions\n设备能力抽象]
     KERNEL --> SCHED[FusionScheduler\n调度协作契约]
     KERNEL --> FA[FusionFA\n工厂自动化映射契约]
-    KERNEL --> DATA[FusionData\n数据边界规划(P1)]
+    KERNEL --> DATA[FusionData\n数据边界规划（仅文档化）]
 ```
 
 ## 模块说明（基于 `FusionCore_Module_Progress.md`）
@@ -58,7 +58,7 @@ flowchart LR
 | FusionScheduler | 调度评估/计划/协调协作契约骨架 | P2 |
 | FusionFA | 自动化映射契约、只读视图与命令查询骨架 | P2 |
 | FusionApp | 应用装配与最小 bootstrap 入口 | P2 |
-| FusionData | 数据管理与存储边界规划（当前仅文档化） | P1 |
+| FusionData | 数据管理与存储边界规划（当前仅文档化） | P1（仅文档化） |
 
 ## 技术栈
 
